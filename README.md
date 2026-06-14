@@ -14,6 +14,7 @@ Conversational documentation copilot for social impact organizations.
 - [PROMPTS.md](./PROMPTS.md) — NIM prompt templates for API routes
 - [DATABASE.md](./DATABASE.md) — Supabase schema and RLS policies
 - [SAMPLE_DATA.md](./SAMPLE_DATA.md) — demo narratives and dashboard seed data
+- [UI_SYSTEM.md](./UI_SYSTEM.md) — colors, typography, component patterns, page layouts
 
 ## Tech Stack
 

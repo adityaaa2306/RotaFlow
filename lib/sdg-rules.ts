@@ -65,6 +65,10 @@ const SDG_REFERENCE: Record<
   },
 };
 
+export const SDG_COLORS: Record<string, string> = Object.fromEntries(
+  Object.entries(SDG_REFERENCE).map(([number, data]) => [`SDG ${number}`, data.color])
+);
+
 const CATEGORY_SDG_MAP: Record<ProjectCategory, number[]> = {
   Healthcare: [3],
   Education: [4, 10],

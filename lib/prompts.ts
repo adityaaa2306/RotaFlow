@@ -1,3 +1,5 @@
+import type { ProjectFormData } from "@/types";
+
 export const EXTRACTION_SYSTEM_PROMPT = `You are a precise information extraction assistant for social impact organizations.
 Extract structured data from natural language event descriptions.
 Return ONLY valid JSON. No preamble. No explanation. No markdown.
@@ -69,10 +71,14 @@ Return exactly this JSON:
 }`;
 }
 
-export function buildSocialPrompt(projectJson: string): string {
+export function buildSocialPrompt(project: ProjectFormData, report_summary: string): string {
   return `Create social media content for this project:
 
-${projectJson}
+Project data:
+${JSON.stringify(project, null, 2)}
+
+Report summary:
+${report_summary}
 
 Return exactly this JSON:
 {
