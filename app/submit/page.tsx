@@ -9,6 +9,7 @@ import { SubmitForm } from "@/components/SubmitForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { insertProject } from "@/lib/supabase";
 import { lux } from "@/lib/theme";
+import { toDateInputValue } from "@/lib/utils";
 import type {
   ExtractedProject,
   InsertProject,
@@ -107,7 +108,7 @@ export default function SubmitPage() {
         updates.category = result.category;
       }
       if (result.date !== null) {
-        updates.date = result.date;
+        updates.date = toDateInputValue(result.date);
       }
       if (result.volunteers !== null) {
         updates.volunteers = result.volunteers;

@@ -29,15 +29,19 @@ import { computeDashboardStats, fetchAllProjects } from "@/lib/supabase";
 import type { DashboardStats, Project, ProjectCategory } from "@/types";
 
 const CATEGORY_BADGE_CLASSES: Record<ProjectCategory, string> = {
-  Healthcare: "bg-red-50 text-red-700",
-  Education: "bg-blue-50 text-blue-700",
-  Environment: "bg-green-50 text-green-700",
-  "Hunger Relief": "bg-orange-50 text-orange-700",
-  "Women Empowerment": "bg-purple-50 text-purple-700",
-  Sanitation: "bg-cyan-50 text-cyan-700",
-  "Community Development": "bg-indigo-50 text-indigo-700",
-  Other: "bg-slate-50 text-slate-700",
+  Healthcare: "bg-red-500/15 text-red-300",
+  Education: "bg-blue-500/15 text-blue-300",
+  Environment: "bg-green-500/15 text-green-300",
+  "Hunger Relief": "bg-orange-500/15 text-orange-300",
+  "Women Empowerment": "bg-purple-500/15 text-purple-300",
+  Sanitation: "bg-cyan-500/15 text-cyan-300",
+  "Community Development": "bg-indigo-500/15 text-indigo-300",
+  Other: "bg-white/10 text-muted-foreground",
 };
+
+const CHART_GRID = "oklch(1 0 0 / 0.08)";
+const CHART_TICK = "oklch(0.65 0.02 260)";
+const CHART_BAR = "oklch(0.65 0.22 255)";
 
 function formatDate(date: string): string {
   if (!date) {
@@ -74,9 +78,9 @@ function CategoryTooltip({
 
   const entry = payload[0].payload;
   return (
-    <div className={lux.tooltip}>
-      <p className="font-medium text-slate-800">{entry.category}</p>
-      <p className="text-slate-600">{entry.count} projects</p>
+    <div className="glass-card rounded-2xl px-3 py-2 text-sm">
+      <p className="font-medium text-foreground">{entry.category}</p>
+      <p className="text-muted-foreground">{entry.count} projects</p>
     </div>
   );
 }
@@ -94,9 +98,9 @@ function SdgTooltip({
 
   const entry = payload[0].payload;
   return (
-    <div className={lux.tooltip}>
-      <p className="font-medium text-slate-800">{entry.sdg}</p>
-      <p className="text-slate-600">{entry.count} projects</p>
+    <div className="glass-card rounded-2xl px-3 py-2 text-sm">
+      <p className="font-medium text-foreground">{entry.sdg}</p>
+      <p className="text-muted-foreground">{entry.count} projects</p>
     </div>
   );
 }
@@ -149,9 +153,9 @@ export default function DashboardPage() {
 
   if (isLoading || !stats) {
     return (
-      <div className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-rota-blue" />
-        <p className="mt-3 text-sm text-slate-500">Loading dashboard...</p>
+      <div className="flex min-h-[calc(100vh-4.5rem)] flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="mt-3 text-sm text-muted-foreground">Loading dashboard...</p>
       </div>
     );
   }
@@ -206,55 +210,54 @@ export default function DashboardPage() {
       <section>
         <h2 className={`${lux.sectionTitle} mb-4`}>Charts</h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="lux-card">
-            <h3 className="text-base font-semibold tracking-tight text-ink">
+          <div className={lux.card}>
+            <h3 className="font-display text-base tracking-tight text-foreground">
               Projects by Category
             </h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               Where the club focuses its energy — useful for planning and district reporting
             </p>
             {stats.projects_by_category.length === 0 ? (
-              <p className="mt-8 text-sm text-slate-500">No projects yet.</p>
+              <p className="mt-8 text-sm text-muted-foreground">No projects yet.</p>
             ) : (
               <ResponsiveContainer width="100%" height={300} className="mt-4">
                 <BarChart
                   data={stats.projects_by_category}
                   margin={{ top: 8, right: 8, left: 0, bottom: 48 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} vertical={false} />
                   <XAxis
                     dataKey="category"
-                    tick={{ fill: "#64748B", fontSize: 10 }}
+                    tick={{ fill: CHART_TICK, fontSize: 10 }}
                     interval={0}
                     angle={-30}
                     textAnchor="end"
                     height={70}
+                    axisLine={false}
+                    tickLine={false}
                   />
                   <YAxis
                     allowDecimals={false}
-                    tick={{ fill: "#64748B", fontSize: 12 }}
+                    tick={{ fill: CHART_TICK, fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
                   />
                   <Tooltip content={<CategoryTooltip />} />
-                  <Bar
-                    dataKey="count"
-                    fill="#171717"
-                    radius={[4, 4, 0, 0]}
-                    name="Projects"
-                  />
+                  <Bar dataKey="count" fill={CHART_BAR} radius={[4, 4, 0, 0]} name="Projects" />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
 
-          <div className="lux-card">
-            <h3 className="text-base font-semibold tracking-tight text-ink">
+          <div className={lux.card}>
+            <h3 className="font-display text-base tracking-tight text-foreground">
               SDG Distribution
             </h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               Global goals alignment — useful for district and international reporting
             </p>
             {stats.sdg_distribution.length === 0 ? (
-              <p className="mt-8 text-sm text-slate-500">No SDG data yet.</p>
+              <p className="mt-8 text-sm text-muted-foreground">No SDG data yet.</p>
             ) : (
               <ResponsiveContainer width="100%" height={300} className="mt-4">
                 <PieChart>
@@ -266,6 +269,8 @@ export default function DashboardPage() {
                     cy="42%"
                     outerRadius={88}
                     innerRadius={0}
+                    stroke="oklch(0.06 0.01 260)"
+                    strokeWidth={2}
                   >
                     {stats.sdg_distribution.map((entry) => (
                       <Cell key={entry.sdg} fill={entry.color} />
@@ -276,7 +281,7 @@ export default function DashboardPage() {
                     verticalAlign="bottom"
                     align="center"
                     iconType="circle"
-                    wrapperStyle={{ fontSize: 12, paddingTop: 16 }}
+                    wrapperStyle={{ fontSize: 12, paddingTop: 16, color: CHART_TICK }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -285,7 +290,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="lux-card">
+      <section className={lux.card}>
         <h2 className={lux.sectionTitle}>Most Impactful Initiatives</h2>
         <p className={lux.sectionSubtitle}>
           Which projects created the most impact — useful for showcasing to external stakeholders
@@ -307,12 +312,12 @@ export default function DashboardPage() {
             <tbody>
               {topProjects.map((project, index) => (
                 <tr key={project.id} className={lux.tableRow}>
-                  <td className="py-3 pr-4 text-base font-bold text-slate-900">
+                  <td className="py-3 pr-4 text-base font-bold text-foreground">
                     {getRankLabel(index + 1)}
                   </td>
                   <td className="py-3 pr-4">
-                    <p className="font-medium text-slate-900">{project.project_name}</p>
-                    <p className="text-xs text-slate-400">{project.club_name}</p>
+                    <p className="font-medium text-foreground">{project.project_name}</p>
+                    <p className="text-xs text-muted-foreground">{project.club_name}</p>
                   </td>
                   <td className="py-3 pr-4">
                     <span
@@ -321,22 +326,22 @@ export default function DashboardPage() {
                       {project.category}
                     </span>
                   </td>
-                  <td className="py-3 pr-4 text-slate-600">
+                  <td className="py-3 pr-4 text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <Users className="h-4 w-4 text-slate-500" />
+                      <Users className="h-4 w-4 text-primary/70" />
                       {project.volunteers}
                     </span>
                   </td>
-                  <td className="py-3 pr-4 text-slate-600">
+                  <td className="py-3 pr-4 text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <Heart className="h-4 w-4 text-slate-500" />
+                      <Heart className="h-4 w-4 text-primary/70" />
                       {project.beneficiaries}
                     </span>
                   </td>
-                  <td className="py-3 pr-4 text-slate-600">{formatDate(project.date)}</td>
+                  <td className="py-3 pr-4 text-muted-foreground">{formatDate(project.date)}</td>
                   <td className="py-3">
                     {usingDemoData ? (
-                      <span className={lux.link}>View Report →</span>
+                      <span className="text-muted-foreground">View Report →</span>
                     ) : (
                       <Link href={`/report/${project.id}`} className={lux.link}>
                         View Report →

@@ -10,7 +10,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Aileron"', "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+        display: ['"Instrument Serif"', "serif"],
       },
       colors: {
         rota: {

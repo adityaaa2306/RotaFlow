@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { lux } from "@/lib/theme";
+import { toDateInputValue, toNumberInputValue } from "@/lib/utils";
 import type { ProjectCategory, ProjectFormData } from "@/types";
 
 type RequiredField =
@@ -227,7 +228,6 @@ export function SubmitForm({
             <input
               id="club_name"
               type="text"
-              required
               value={formData.club_name}
               onChange={(event) => onChange({ club_name: event.target.value })}
               className={getFieldClassName("club_name", formData, formTouched)}
@@ -239,7 +239,6 @@ export function SubmitForm({
             <input
               id="project_name"
               type="text"
-              required
               value={formData.project_name}
               onChange={(event) => onChange({ project_name: event.target.value })}
               className={getFieldClassName("project_name", formData, formTouched)}
@@ -279,9 +278,10 @@ export function SubmitForm({
             <input
               id="date"
               type="date"
-              required
-              value={formData.date}
-              onChange={(event) => onChange({ date: event.target.value })}
+              value={toDateInputValue(formData.date)}
+              onChange={(event) =>
+                onChange({ date: toDateInputValue(event.target.value) })
+              }
               className={getFieldClassName("date", formData, formTouched)}
             />
             <FieldError field="date" formData={formData} formTouched={formTouched} />
@@ -295,16 +295,16 @@ export function SubmitForm({
             <RequiredLabel htmlFor="volunteers">Volunteers</RequiredLabel>
             <input
               id="volunteers"
-              type="number"
-              required
-              min={0}
-              value={formData.volunteers}
-              onChange={(event) =>
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={toNumberInputValue(formData.volunteers)}
+              onChange={(event) => {
+                const raw = event.target.value.replace(/[^\d]/g, "");
                 onChange({
-                  volunteers:
-                    event.target.value === "" ? "" : Number(event.target.value),
-                })
-              }
+                  volunteers: raw === "" ? "" : Number(raw),
+                });
+              }}
               className={getFieldClassName("volunteers", formData, formTouched)}
             />
             <FieldError field="volunteers" formData={formData} formTouched={formTouched} />
@@ -313,16 +313,16 @@ export function SubmitForm({
             <RequiredLabel htmlFor="beneficiaries">Beneficiaries</RequiredLabel>
             <input
               id="beneficiaries"
-              type="number"
-              required
-              min={0}
-              value={formData.beneficiaries}
-              onChange={(event) =>
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={toNumberInputValue(formData.beneficiaries)}
+              onChange={(event) => {
+                const raw = event.target.value.replace(/[^\d]/g, "");
                 onChange({
-                  beneficiaries:
-                    event.target.value === "" ? "" : Number(event.target.value),
-                })
-              }
+                  beneficiaries: raw === "" ? "" : Number(raw),
+                });
+              }}
               className={getFieldClassName("beneficiaries", formData, formTouched)}
             />
             <FieldError field="beneficiaries" formData={formData} formTouched={formTouched} />
@@ -331,17 +331,16 @@ export function SubmitForm({
             <RequiredLabel htmlFor="duration_hours">Duration Hours</RequiredLabel>
             <input
               id="duration_hours"
-              type="number"
-              required
-              min={0}
-              step={0.5}
-              value={formData.duration_hours}
-              onChange={(event) =>
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              value={toNumberInputValue(formData.duration_hours)}
+              onChange={(event) => {
+                const raw = event.target.value.replace(/[^\d.]/g, "");
                 onChange({
-                  duration_hours:
-                    event.target.value === "" ? "" : Number(event.target.value),
-                })
-              }
+                  duration_hours: raw === "" || raw === "." ? "" : Number(raw),
+                });
+              }}
               className={inputClassName}
             />
           </div>
@@ -381,7 +380,7 @@ export function SubmitForm({
         <input
           id="photos"
           type="file"
-          accept="image/*,.heic,.heif"
+          accept="image/*"
           multiple
           onChange={handlePhotoChange}
           className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border file:border-slate-200 file:bg-white file:px-5 file:py-2 file:text-sm file:font-medium file:text-neutral-900 hover:file:bg-neutral-50"
