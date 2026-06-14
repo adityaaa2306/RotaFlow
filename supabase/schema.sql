@@ -1,5 +1,5 @@
--- ImpactPilot AI — Supabase schema
--- Run in Supabase SQL Editor (see DATABASE.md)
+-- RotaFlow — Supabase schema
+-- Run this file in the Supabase SQL Editor before first use.
 
 create table if not exists projects (
   id uuid primary key default gen_random_uuid(),
