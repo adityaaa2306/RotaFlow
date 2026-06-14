@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FileX, Search } from "lucide-react";
 import { ProjectCard } from "@/components/ProjectCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { lux } from "@/lib/theme";
 import { fetchAllProjects } from "@/lib/supabase";
 import type { Project, ProjectCategory } from "@/types";
 
@@ -19,12 +20,11 @@ const CATEGORIES: ProjectCategory[] = [
   "Other",
 ];
 
-const inputClassName =
-  "w-full rounded-lg border border-slate-200 bg-white py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
+const inputClassName = lux.input;
 
 function ProjectCardSkeleton() {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="lux-card">
       <div className="flex justify-end">
         <Skeleton className="h-6 w-24 rounded-full" />
       </div>
@@ -54,6 +54,8 @@ export default function ArchivePage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [yearFilter, setYearFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadProjects() {
@@ -65,6 +67,38 @@ export default function ArchivePage() {
 
     loadProjects();
   }, []);
+
+  async function handleDeleteProject(projectId: string) {
+    const project = projects.find((entry) => entry.id === projectId);
+    const label = project?.project_name ?? "this project";
+
+    if (
+      !window.confirm(
+        `Delete "${label}" and its report, photos, and social posts? This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    setDeletingProjectId(projectId);
+    setDeleteError(null);
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, { method: "DELETE" });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Failed to delete project");
+      }
+
+      setProjects((current) => current.filter((entry) => entry.id !== projectId));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to delete project";
+      setDeleteError(message);
+    } finally {
+      setDeletingProjectId(null);
+    }
+  }
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
@@ -101,12 +135,12 @@ export default function ArchivePage() {
 
   return (
     <div className="mx-auto max-w-7xl p-8">
-      <header className="mb-8 border-b border-slate-200 pb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Project Archive</h1>
-        <p className="mt-1 text-sm text-slate-500">All your documented initiatives.</p>
+      <header className={lux.pageHeader}>
+        <h1 className={lux.pageTitle}>Project Archive</h1>
+        <p className={lux.pageSubtitle}>All your documented initiatives.</p>
       </header>
 
-      <div className="sticky top-0 z-10 bg-slate-50 pb-4">
+      <div className="sticky top-20 z-10 bg-neutral-100 pb-4">
         <div className="grid gap-4 md:grid-cols-3">
           <div className="relative md:col-span-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -149,6 +183,12 @@ export default function ArchivePage() {
             Showing {filteredProjects.length} projects
           </p>
         )}
+
+        {deleteError && (
+          <p className={`mt-3 ${lux.bannerError}`}>
+            {deleteError}
+          </p>
+        )}
       </div>
 
       {isLoading ? (
@@ -169,7 +209,7 @@ export default function ArchivePage() {
           {!filtersActive && (
             <Link
               href="/submit"
-              className="mt-6 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className={`${lux.btnPrimary} mt-6`}
             >
               Submit Project
             </Link>
@@ -178,7 +218,12 @@ export default function ArchivePage() {
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onDelete={handleDeleteProject}
+              isDeleting={deletingProjectId === project.id}
+            />
           ))}
         </div>
       )}

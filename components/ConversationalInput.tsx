@@ -2,11 +2,12 @@
 
 import { useRef, useState } from "react";
 import { AlertCircle, Loader2, Mic, Sparkles } from "lucide-react";
+import { lux } from "@/lib/theme";
 import { SAMPLE_NARRATIVES } from "@/lib/sample-data";
 import type { ExtractedProject } from "@/types";
 
 export interface ConversationalInputProps {
-  onExtracted: (result: ExtractedProject) => void;
+  onExtracted: (result: ExtractedProject, narrative: string) => void;
 }
 
 export function ConversationalInput({ onExtracted }: ConversationalInputProps) {
@@ -48,7 +49,7 @@ export function ConversationalInput({ onExtracted }: ConversationalInputProps) {
         throw new Error(data.error ?? "Failed to extract project data");
       }
 
-      onExtracted(data as ExtractedProject);
+      onExtracted(data as ExtractedProject, text);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to extract project data";
       setError(message);
@@ -142,14 +143,14 @@ export function ConversationalInput({ onExtracted }: ConversationalInputProps) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="lux-card">
       <div className="mb-4 flex items-center gap-2">
-        <Sparkles className="h-5 w-5 text-blue-600" />
-        <h2 className="text-lg font-semibold text-slate-800">Describe Your Event</h2>
+        <Sparkles className="h-5 w-5 text-rota-blue" />
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Describe Your Event</h2>
       </div>
 
       <textarea
-        className="min-h-40 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={`${lux.input} min-h-40`}
         placeholder="Yesterday our club organized a blood donation camp with Ruby Hall Clinic. Around 48 volunteers collected 62 units of blood between 9 AM and 2 PM..."
         value={narrative}
         onChange={(event) => setNarrative(event.target.value)}
@@ -162,7 +163,7 @@ export function ConversationalInput({ onExtracted }: ConversationalInputProps) {
           type="button"
           onClick={() => setNarrative(SAMPLE_NARRATIVES[0].text)}
           disabled={voiceBusy}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className={lux.btnSecondary}
         >
           Load Demo
         </button>
@@ -170,7 +171,7 @@ export function ConversationalInput({ onExtracted }: ConversationalInputProps) {
           type="button"
           onClick={() => handleAutoFill()}
           disabled={!canExtract}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="lux-btn-primary disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isExtracting && <Loader2 className="h-4 w-4 animate-spin" />}
           ✨ Auto-Fill with AI
@@ -181,10 +182,10 @@ export function ConversationalInput({ onExtracted }: ConversationalInputProps) {
         type="button"
         onClick={handleVoiceToggle}
         disabled={isTranscribing || isExtracting}
-        className={`mt-3 flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50 ${
+        className={`mt-3 flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50 ${
           isRecording
             ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
-            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+            : `${lux.btnSecondary} w-full`
         }`}
       >
         {isTranscribing ? (
@@ -203,7 +204,7 @@ export function ConversationalInput({ onExtracted }: ConversationalInputProps) {
       </button>
 
       {error && (
-        <div className="mt-4 flex gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+        <div className={`mt-4 flex gap-3 ${lux.bannerError}`}>
           <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
           <p className="text-sm text-red-700">{error}</p>
         </div>

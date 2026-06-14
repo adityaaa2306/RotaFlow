@@ -11,6 +11,7 @@ export type ProjectCategory =
 export type ConfidenceLevel = "confirmed" | "inferred" | "missing";
 
 export interface ExtractionConfidence {
+  club_name: ConfidenceLevel;
   project_name: ConfidenceLevel;
   category: ConfidenceLevel;
   date: ConfidenceLevel;
@@ -18,9 +19,11 @@ export interface ExtractionConfidence {
   beneficiaries: ConfidenceLevel;
   duration_hours: ConfidenceLevel;
   partners: ConfidenceLevel;
+  description: ConfidenceLevel;
 }
 
 export interface ExtractedProject {
+  club_name: string | null;
   project_name: string | null;
   category: ProjectCategory | null;
   date: string | null;
@@ -29,6 +32,7 @@ export interface ExtractedProject {
   duration_hours: number | null;
   partners: string[];
   activities: string[];
+  description: string | null;
   confidence: ExtractionConfidence;
 }
 
@@ -123,7 +127,7 @@ export interface DashboardStats {
   total_beneficiaries: number;
   total_partnerships: number;
   projects_by_category: { category: string; count: number }[];
-  sdg_distribution: { sdg: string; count: number }[];
+  sdg_distribution: { sdg: string; count: number; color: string }[];
 }
 
 export type InsertProject = Omit<Project, "id" | "created_at">;

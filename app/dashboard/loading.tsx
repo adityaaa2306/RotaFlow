@@ -2,8 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 function StatCardSkeleton() {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <Skeleton className="h-8 w-8 rounded-lg" />
+    <div className="lux-card">
+      <Skeleton className="h-8 w-8 rounded-2xl" />
       <Skeleton className="mt-4 h-9 w-20" />
       <Skeleton className="mt-2 h-4 w-28" />
     </div>
@@ -25,13 +25,13 @@ export default function DashboardLoading() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="lux-card">
           <Skeleton className="h-5 w-40" />
-          <Skeleton className="mt-4 h-72 w-full rounded-lg" />
+          <Skeleton className="mt-4 h-72 w-full rounded-2xl" />
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="lux-card">
           <Skeleton className="h-5 w-36" />
-          <Skeleton className="mt-4 h-72 w-full rounded-lg" />
+          <Skeleton className="mt-4 h-72 w-full rounded-2xl" />
         </div>
       </div>
     </div>

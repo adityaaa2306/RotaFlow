@@ -1,9 +1,15 @@
+"use client";
+
 import Link from "next/link";
-import { Calendar, Heart, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Calendar, Heart, Loader2, Trash2, Users } from "lucide-react";
+import { lux } from "@/lib/theme";
 import type { Project, ProjectCategory } from "@/types";
 
 export interface ProjectCardProps {
   project: Project;
+  onDelete?: (projectId: string) => void | Promise<void>;
+  isDeleting?: boolean;
 }
 
 const CATEGORY_BADGE_CLASSES: Record<ProjectCategory, string> = {
@@ -32,9 +38,29 @@ function formatDate(date: string): string {
   });
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, onDelete, isDeleting = false }: ProjectCardProps) {
+  const router = useRouter();
+  const reportHref = `/report/${project.id}`;
+
+  function openReport() {
+    if (!isDeleting) {
+      router.push(reportHref);
+    }
+  }
+
   return (
-    <article className="cursor-pointer rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-slate-300 hover:shadow-md">
+    <article
+      role="button"
+      tabIndex={0}
+      onClick={openReport}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openReport();
+        }
+      }}
+      className={`${lux.cardInteractive} cursor-pointer focus:outline-none focus:ring-2 focus:ring-rota-blue/20`}
+    >
       <div className="flex justify-end">
         <span
           className={`rounded-full px-3 py-1 text-xs font-medium ${CATEGORY_BADGE_CLASSES[project.category]}`}
@@ -62,12 +88,32 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </span>
       </div>
 
-      <Link
-        href={`/report/${project.id}`}
-        className="mt-4 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
+      <div
+        className="mt-4 flex items-center justify-between gap-3"
+        onClick={(event) => event.stopPropagation()}
       >
-        View Report →
-      </Link>
+        <Link
+          href={reportHref}
+          className={`${lux.link} inline-flex items-center text-sm`}
+        >
+          View Report →
+        </Link>
+        {onDelete && (
+          <button
+            type="button"
+            disabled={isDeleting}
+            onClick={() => onDelete(project.id)}
+            className={lux.btnDanger}
+          >
+            {isDeleting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="h-3.5 w-3.5" />
+            )}
+            Delete
+          </button>
+        )}
+      </div>
     </article>
   );
 }

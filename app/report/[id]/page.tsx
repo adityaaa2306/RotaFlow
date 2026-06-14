@@ -6,9 +6,11 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { ReportView } from "@/components/ReportView";
 import { calculateMetrics } from "@/lib/metrics";
 import { generatePDF } from "@/lib/pdf-generator";
-import { fetchProjectWithReportById, insertReport } from "@/lib/supabase";
+import { fetchProjectWithReportById, fetchPhotosByProjectId, insertReport } from "@/lib/supabase";
+import { lux } from "@/lib/theme";
 import type {
   ImpactMetrics,
+  Photo,
   Project,
   ProjectFormData,
   ReportData,
@@ -149,6 +151,7 @@ export default function ReportPage() {
 
   const [project, setProject] = useState<Project | null>(null);
   const [report, setReport] = useState<ReportData | null>(null);
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [hadExistingReport, setHadExistingReport] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
@@ -187,6 +190,7 @@ export default function ReportPage() {
 
         const loadedProject = result.project;
         setProject(loadedProject);
+        setPhotos(await fetchPhotosByProjectId(id));
 
         if (result.report) {
           setReport(reportRowToReportData(result.report, loadedProject));
@@ -233,8 +237,8 @@ export default function ReportPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-rota-blue" />
         <p className="mt-3 text-sm text-slate-500">Loading...</p>
       </div>
     );
@@ -242,8 +246,8 @@ export default function ReportPage() {
 
   if (isGeneratingReport) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-rota-blue" />
         <p className="mt-3 text-sm text-slate-500">Generating your report with AI...</p>
       </div>
     );
@@ -252,7 +256,7 @@ export default function ReportPage() {
   if (error) {
     return (
       <div className="mx-auto max-w-5xl p-8">
-        <div className="flex gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+        <div className={`flex gap-3 ${lux.bannerError}`}>
           <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
           <p className="text-sm text-red-700">{error}</p>
         </div>
@@ -265,6 +269,7 @@ export default function ReportPage() {
       <ReportView
         report={report}
         project={project}
+        photos={photos}
         onDownloadPDF={handleDownloadPDF}
         isGeneratingPDF={isGeneratingPDF}
         onRegenerateReport={handleRegenerateReport}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CheckCheck, Copy, Share2 } from "lucide-react";
 import type { SocialKit } from "@/types";
+import { lux } from "@/lib/theme";
 
 export interface SocialMediaKitProps {
   socialKit: SocialKit;
@@ -37,8 +38,8 @@ export function SocialMediaKit({ socialKit }: SocialMediaKitProps) {
         onClick={() => handleCopy(platform, text)}
         className={
           isCopied
-            ? "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-green-600"
-            : "inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            ? "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-green-700"
+            : lux.btnSecondary
         }
       >
         {isCopied ? (
@@ -58,8 +59,8 @@ export function SocialMediaKit({ socialKit }: SocialMediaKitProps) {
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center gap-2 rounded-t-xl bg-gradient-to-r from-pink-500 to-purple-600 px-4 py-3">
+      <div className="lux-card overflow-hidden p-0">
+        <div className="flex items-center gap-2 bg-neutral-900 px-4 py-3">
           <Share2 className="h-4 w-4 text-white" />
           <span className="text-sm font-semibold text-white">Instagram</span>
         </div>
@@ -70,7 +71,7 @@ export function SocialMediaKit({ socialKit }: SocialMediaKitProps) {
               {socialKit.instagram.hashtags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-600"
+                  className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs text-neutral-700"
                 >
                   {formatHashtag(tag)}
                 </span>
@@ -83,8 +84,8 @@ export function SocialMediaKit({ socialKit }: SocialMediaKitProps) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="rounded-t-xl bg-blue-700 px-4 py-3">
+      <div className="lux-card overflow-hidden p-0">
+        <div className="bg-neutral-800 px-4 py-3">
           <span className="text-sm font-semibold text-white">LinkedIn</span>
         </div>
         <div className="p-4">
@@ -95,8 +96,8 @@ export function SocialMediaKit({ socialKit }: SocialMediaKitProps) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="rounded-t-xl bg-slate-900 px-4 py-3">
+      <div className="lux-card overflow-hidden p-0">
+        <div className="bg-neutral-900 px-4 py-3">
           <span className="text-sm font-semibold text-white">X (Twitter)</span>
         </div>
         <div className="space-y-2 p-4">

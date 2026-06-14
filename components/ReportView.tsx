@@ -9,6 +9,7 @@ import {
   FileText,
   Globe,
   Handshake,
+  ImageIcon,
   Lightbulb,
   ListChecks,
   Loader2,
@@ -21,13 +22,17 @@ import {
   Users,
 } from "lucide-react";
 import { MetricsCard } from "@/components/MetricsCard";
+import { lux } from "@/lib/theme";
 import { SDGBadges } from "@/components/SDGBadges";
 import { SocialMediaKit } from "@/components/SocialMediaKit";
-import type { Project, ProjectCategory, ReportData } from "@/types";
+import { InstagramPublish } from "@/components/InstagramPublish";
+import { XPublish } from "@/components/XPublish";
+import type { Photo, Project, ProjectCategory, ReportData } from "@/types";
 
 export interface ReportViewProps {
   report: ReportData;
   project: Project;
+  photos: Photo[];
   onDownloadPDF: () => void;
   isGeneratingPDF: boolean;
   onRegenerateReport?: () => void;
@@ -78,8 +83,8 @@ function SectionHeading({
   children: React.ReactNode;
 }) {
   return (
-    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-800">
-      <Icon className="h-5 w-5 text-blue-600" />
+    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold tracking-tight text-neutral-900">
+      <Icon className="h-5 w-5 text-neutral-700" />
       {children}
     </h2>
   );
@@ -88,6 +93,7 @@ function SectionHeading({
 export function ReportView({
   report,
   project,
+  photos,
   onDownloadPDF,
   isGeneratingPDF,
   onRegenerateReport,
@@ -99,7 +105,7 @@ export function ReportView({
 
   return (
     <div>
-      <div className="sticky top-0 z-10 border-b border-slate-200 bg-white">
+      <div className="sticky top-20 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-8 py-4">
           <Link
             href="/archive"
@@ -115,7 +121,7 @@ export function ReportView({
                 type="button"
                 onClick={onRegenerateReport}
                 disabled={isRegenerating || isGeneratingPDF}
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className={`${lux.btnSecondary} disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 {isRegenerating && <Loader2 className="h-4 w-4 animate-spin" />}
                 <RefreshCw className="h-4 w-4" />
@@ -126,7 +132,7 @@ export function ReportView({
               type="button"
               onClick={onDownloadPDF}
               disabled={isGeneratingPDF || isRegenerating}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="lux-btn-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isGeneratingPDF && <Loader2 className="h-4 w-4 animate-spin" />}
               Download PDF
@@ -136,9 +142,9 @@ export function ReportView({
       </div>
 
       <div id="pdf-content" className="mx-auto max-w-5xl space-y-8 p-8">
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="lux-card">
           <p className="text-sm text-slate-500">{project.club_name}</p>
-          <h1 className="text-2xl font-bold text-slate-900">{project.project_name}</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-neutral-900">{project.project_name}</h1>
           <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600">
             <span className="inline-flex items-center gap-2">
               <Calendar className="h-4 w-4 text-slate-500" />
@@ -159,6 +165,29 @@ export function ReportView({
             {project.category}
           </span>
         </div>
+
+        {photos.length > 0 && (
+          <section className="lux-card">
+            <SectionHeading icon={ImageIcon}>Event Photos</SectionHeading>
+            <div className="grid grid-cols-2 gap-4">
+              {photos.map((photo) => (
+                <figure key={photo.id} className="overflow-hidden rounded-2xl border border-slate-200/70">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo.storage_url}
+                    alt={photo.caption || "Project photo"}
+                    className="aspect-[4/3] w-full object-cover"
+                  />
+                  {photo.caption && (
+                    <figcaption className="border-t border-slate-100 px-3 py-2 text-xs text-slate-600">
+                      {photo.caption}
+                    </figcaption>
+                  )}
+                </figure>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="grid grid-cols-3 gap-4">
           <MetricsCard
@@ -184,7 +213,7 @@ export function ReportView({
         {REPORT_SECTIONS.map(({ title, icon: Icon, key, italic }) => (
           <div
             key={key}
-            className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+            className="lux-card"
           >
             <SectionHeading icon={Icon}>{title}</SectionHeading>
             <p className={`text-sm text-slate-600 ${italic ? "italic" : ""}`}>
@@ -201,6 +230,10 @@ export function ReportView({
         <section>
           <SectionHeading icon={Share2}>Social Media Kit</SectionHeading>
           <SocialMediaKit socialKit={report.social_kit} />
+          <div className="mt-6 space-y-6">
+            <InstagramPublish projectId={project.id} />
+            <XPublish projectId={project.id} />
+          </div>
         </section>
       </div>
     </div>

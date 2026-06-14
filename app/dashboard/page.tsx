@@ -23,8 +23,8 @@ import {
   Users,
 } from "lucide-react";
 import { MetricsCard } from "@/components/MetricsCard";
-import { DEMO_DASHBOARD_STATS } from "@/lib/sample-data";
-import { SDG_COLORS } from "@/lib/sdg-rules";
+import { lux } from "@/lib/theme";
+import { DEMO_DASHBOARD_STATS, DEMO_PROJECTS } from "@/lib/sample-data";
 import { computeDashboardStats, fetchAllProjects } from "@/lib/supabase";
 import type { DashboardStats, Project, ProjectCategory } from "@/types";
 
@@ -55,14 +55,50 @@ function formatDate(date: string): string {
 }
 
 function getRankLabel(rank: number): string {
-  if (rank === 1) return "🥇 1";
-  if (rank === 2) return "🥈 2";
-  if (rank === 3) return "🥉 3";
+  if (rank === 1) return "🥇";
+  if (rank === 2) return "🥈";
+  if (rank === 3) return "🥉";
   return String(rank);
 }
 
-function getSdgColor(sdgLabel: string): string {
-  return SDG_COLORS[sdgLabel] ?? "#64748B";
+function CategoryTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { value: number; payload: { category: string; count: number } }[];
+}) {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  const entry = payload[0].payload;
+  return (
+    <div className={lux.tooltip}>
+      <p className="font-medium text-slate-800">{entry.category}</p>
+      <p className="text-slate-600">{entry.count} projects</p>
+    </div>
+  );
+}
+
+function SdgTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { value: number; payload: { sdg: string; count: number } }[];
+}) {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  const entry = payload[0].payload;
+  return (
+    <div className={lux.tooltip}>
+      <p className="font-medium text-slate-800">{entry.sdg}</p>
+      <p className="text-slate-600">{entry.count} projects</p>
+    </div>
+  );
 }
 
 export default function DashboardPage() {
@@ -82,13 +118,12 @@ export default function DashboardPage() {
     []
   );
 
-  const topProjects = useMemo(
-    () =>
-      [...projects]
-        .sort((a, b) => b.beneficiaries - a.beneficiaries)
-        .slice(0, 5),
-    [projects]
-  );
+  const topProjects = useMemo(() => {
+    const source = usingDemoData ? DEMO_PROJECTS : projects;
+    return [...source]
+      .sort((a, b) => b.beneficiaries - a.beneficiaries)
+      .slice(0, 5);
+  }, [projects, usingDemoData]);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -98,10 +133,10 @@ export default function DashboardPage() {
 
       if (fetchedProjects.length === 0) {
         setStats(DEMO_DASHBOARD_STATS);
-        setProjects([]);
+        setProjects(DEMO_PROJECTS);
         setUsingDemoData(true);
       } else {
-        setStats(computeDashboardStats(fetchedProjects, []));
+        setStats(computeDashboardStats(fetchedProjects));
         setProjects(fetchedProjects);
         setUsingDemoData(false);
       }
@@ -114,8 +149,8 @@ export default function DashboardPage() {
 
   if (isLoading || !stats) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-rota-blue" />
         <p className="mt-3 text-sm text-slate-500">Loading dashboard...</p>
       </div>
     );
@@ -124,154 +159,196 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-8">
       {usingDemoData && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+        <div className={lux.bannerWarning}>
           Showing demo data — submit your first project to see real stats
         </div>
       )}
 
-      <header className="border-b border-slate-200 pb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Analytics Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-500">{todayLabel}</p>
+      <header className={lux.pageHeader}>
+        <h1 className={lux.pageTitle}>Analytics Dashboard</h1>
+        <p className={lux.pageSubtitle}>{todayLabel}</p>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricsCard
-          label="Total Projects"
-          value={stats.total_projects}
-          icon={FolderOpen}
-          color="blue"
-        />
-        <MetricsCard
-          label="Volunteers Mobilized"
-          value={stats.total_volunteers}
-          icon={Users}
-          color="green"
-        />
-        <MetricsCard
-          label="Beneficiaries Reached"
-          value={stats.total_beneficiaries}
-          icon={Heart}
-          color="purple"
-        />
-        <MetricsCard
-          label="Partnerships"
-          value={stats.total_partnerships}
-          icon={Handshake}
-          color="orange"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-800">
-            Projects by Category
-          </h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={stats.projects_by_category}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-              <XAxis dataKey="category" tick={{ fill: "#64748B", fontSize: 11 }} />
-              <YAxis tick={{ fill: "#64748B", fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{ borderRadius: 8, border: "1px solid #E2E8F0" }}
-              />
-              <Bar
-                dataKey="count"
-                fill="#2563EB"
-                radius={[4, 4, 0, 0]}
-                name="Projects"
-              />
-            </BarChart>
-          </ResponsiveContainer>
+      <section>
+        <h2 className={lux.sectionTitle}>Top Stats</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricsCard
+            label="Total Projects"
+            value={stats.total_projects}
+            icon={FolderOpen}
+            color="blue"
+            description="Overall organizational activity level"
+          />
+          <MetricsCard
+            label="Volunteers Mobilized"
+            value={stats.total_volunteers}
+            icon={Users}
+            color="green"
+            description="Total human effort the club has coordinated"
+          />
+          <MetricsCard
+            label="Beneficiaries Reached"
+            value={stats.total_beneficiaries}
+            icon={Heart}
+            color="purple"
+            description="The actual human impact — your most important number"
+          />
+          <MetricsCard
+            label="Partnerships Formed"
+            value={stats.total_partnerships}
+            icon={Handshake}
+            color="orange"
+            description="Your club's network and collaborative reach"
+          />
         </div>
+      </section>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-800">
-            SDG Distribution
-          </h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie
-                data={stats.sdg_distribution}
-                dataKey="count"
-                nameKey="sdg"
-                cx="50%"
-                cy="50%"
-                outerRadius={90}
-              >
-                {stats.sdg_distribution.map((entry) => (
-                  <Cell key={entry.sdg} fill={getSdgColor(entry.sdg)} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{ borderRadius: 8, border: "1px solid #E2E8F0" }}
-              />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+      <section>
+        <h2 className={`${lux.sectionTitle} mb-4`}>Charts</h2>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="lux-card">
+            <h3 className="text-base font-semibold tracking-tight text-ink">
+              Projects by Category
+            </h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Where the club focuses its energy — useful for planning and district reporting
+            </p>
+            {stats.projects_by_category.length === 0 ? (
+              <p className="mt-8 text-sm text-slate-500">No projects yet.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={300} className="mt-4">
+                <BarChart
+                  data={stats.projects_by_category}
+                  margin={{ top: 8, right: 8, left: 0, bottom: 48 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+                  <XAxis
+                    dataKey="category"
+                    tick={{ fill: "#64748B", fontSize: 10 }}
+                    interval={0}
+                    angle={-30}
+                    textAnchor="end"
+                    height={70}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fill: "#64748B", fontSize: 12 }}
+                  />
+                  <Tooltip content={<CategoryTooltip />} />
+                  <Bar
+                    dataKey="count"
+                    fill="#171717"
+                    radius={[4, 4, 0, 0]}
+                    name="Projects"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          <div className="lux-card">
+            <h3 className="text-base font-semibold tracking-tight text-ink">
+              SDG Distribution
+            </h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Global goals alignment — useful for district and international reporting
+            </p>
+            {stats.sdg_distribution.length === 0 ? (
+              <p className="mt-8 text-sm text-slate-500">No SDG data yet.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={300} className="mt-4">
+                <PieChart>
+                  <Pie
+                    data={stats.sdg_distribution}
+                    dataKey="count"
+                    nameKey="sdg"
+                    cx="50%"
+                    cy="42%"
+                    outerRadius={88}
+                    innerRadius={0}
+                  >
+                    {stats.sdg_distribution.map((entry) => (
+                      <Cell key={entry.sdg} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<SdgTooltip />} />
+                  <Legend
+                    verticalAlign="bottom"
+                    align="center"
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: 12, paddingTop: 16 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold text-slate-800">
-          Most Impactful Initiatives
-        </h2>
+      <section className="lux-card">
+        <h2 className={lux.sectionTitle}>Most Impactful Initiatives</h2>
+        <p className={lux.sectionSubtitle}>
+          Which projects created the most impact — useful for showcasing to external stakeholders
+        </p>
 
-        {topProjects.length === 0 ? (
-          <p className="text-sm text-slate-500">
-            Submit projects to see your most impactful initiatives here.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-slate-500">
-                  <th className="pb-3 pr-4 font-medium">Rank</th>
-                  <th className="pb-3 pr-4 font-medium">Project Name</th>
-                  <th className="pb-3 pr-4 font-medium">Category</th>
-                  <th className="pb-3 pr-4 font-medium">Volunteers</th>
-                  <th className="pb-3 pr-4 font-medium">Beneficiaries</th>
-                  <th className="pb-3 pr-4 font-medium">Date</th>
-                  <th className="pb-3 font-medium">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topProjects.map((project, index) => (
-                  <tr key={project.id} className="border-b border-slate-100">
-                    <td className="py-3 pr-4 font-bold text-slate-900">
-                      {getRankLabel(index + 1)}
-                    </td>
-                    <td className="py-3 pr-4 font-medium text-slate-900">
-                      {project.project_name}
-                    </td>
-                    <td className="py-3 pr-4">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_BADGE_CLASSES[project.category]}`}
-                      >
-                        {project.category}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-4 text-slate-600">{project.volunteers}</td>
-                    <td className="py-3 pr-4 text-slate-600">
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className={lux.tableHead}>
+                <th className="pb-3 pr-4 font-medium">Rank</th>
+                <th className="pb-3 pr-4 font-medium">Project Name</th>
+                <th className="pb-3 pr-4 font-medium">Category</th>
+                <th className="pb-3 pr-4 font-medium">Volunteers</th>
+                <th className="pb-3 pr-4 font-medium">Beneficiaries</th>
+                <th className="pb-3 pr-4 font-medium">Date</th>
+                <th className="pb-3 font-medium">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topProjects.map((project, index) => (
+                <tr key={project.id} className={lux.tableRow}>
+                  <td className="py-3 pr-4 text-base font-bold text-slate-900">
+                    {getRankLabel(index + 1)}
+                  </td>
+                  <td className="py-3 pr-4">
+                    <p className="font-medium text-slate-900">{project.project_name}</p>
+                    <p className="text-xs text-slate-400">{project.club_name}</p>
+                  </td>
+                  <td className="py-3 pr-4">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_BADGE_CLASSES[project.category]}`}
+                    >
+                      {project.category}
+                    </span>
+                  </td>
+                  <td className="py-3 pr-4 text-slate-600">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Users className="h-4 w-4 text-slate-500" />
+                      {project.volunteers}
+                    </span>
+                  </td>
+                  <td className="py-3 pr-4 text-slate-600">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Heart className="h-4 w-4 text-slate-500" />
                       {project.beneficiaries}
-                    </td>
-                    <td className="py-3 pr-4 text-slate-600">
-                      {formatDate(project.date)}
-                    </td>
-                    <td className="py-3">
-                      <Link
-                        href={`/report/${project.id}`}
-                        className="font-medium text-blue-600 hover:text-blue-700"
-                      >
+                    </span>
+                  </td>
+                  <td className="py-3 pr-4 text-slate-600">{formatDate(project.date)}</td>
+                  <td className="py-3">
+                    {usingDemoData ? (
+                      <span className={lux.link}>View Report →</span>
+                    ) : (
+                      <Link href={`/report/${project.id}`} className={lux.link}>
                         View Report →
                       </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

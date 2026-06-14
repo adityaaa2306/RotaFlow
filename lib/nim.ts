@@ -31,14 +31,33 @@ export function parseJsonFromResponse<T>(raw: string): T {
   return JSON.parse(cleaned) as T;
 }
 
+function normalizeNimApiKey(raw: string | undefined, envName: string): string {
+  if (!raw?.trim()) {
+    throw new Error(`${envName} is not configured`);
+  }
+
+  return raw.trim().replace(/^Bearer\s+/i, "").split(/\s+/)[0] ?? "";
+}
+
+export function getNimTextApiKey(): string {
+  return normalizeNimApiKey(
+    process.env.NVIDIA_NIM_TEXT_API_KEY,
+    "NVIDIA_NIM_TEXT_API_KEY"
+  );
+}
+
+export function getNimVisionApiKey(): string {
+  return normalizeNimApiKey(
+    process.env.NVIDIA_NIM_VISION_API_KEY,
+    "NVIDIA_NIM_VISION_API_KEY"
+  );
+}
+
 export async function callNim(
   prompt: string,
   options: CallNimOptions = {}
 ): Promise<string> {
-  const apiKey = process.env.NVIDIA_NIM_API_KEY;
-  if (!apiKey) {
-    throw new Error("NVIDIA_NIM_API_KEY is not configured");
-  }
+  const apiKey = getNimTextApiKey();
 
   const messages: NimMessage[] = options.messages ?? [];
   if (options.systemPrompt) {

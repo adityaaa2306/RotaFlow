@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+import { mapCategoryToSDGs } from "@/lib/sdg-rules";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type {
   DashboardStats,
   InsertProject,
@@ -7,17 +8,29 @@ import type {
   Project,
   ProjectWithReport,
   ReportRow,
-  SDGItem,
 } from "@/types";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+let supabaseClient: SupabaseClient | null = null;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+function getSupabase(): SupabaseClient {
+  if (supabaseClient) {
+    return supabaseClient;
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Supabase is not configured");
+  }
+
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+  return supabaseClient;
+}
 
 export async function insertProject(data: InsertProject): Promise<Project> {
   try {
-    const { data: project, error } = await supabase
+    const { data: project, error } = await getSupabase()
       .from("projects")
       .insert(data)
       .select()
@@ -38,7 +51,7 @@ export async function insertProject(data: InsertProject): Promise<Project> {
 
 export async function insertReport(data: InsertReport): Promise<ReportRow> {
   try {
-    const { data: report, error } = await supabase
+    const { data: report, error } = await getSupabase()
       .from("reports")
       .insert(data)
       .select()
@@ -59,7 +72,7 @@ export async function insertReport(data: InsertReport): Promise<ReportRow> {
 
 export async function fetchAllProjects(): Promise<Project[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from("projects")
       .select("*")
       .order("created_at", { ascending: false });
@@ -78,7 +91,7 @@ export async function fetchProjectWithReportById(
   id: string
 ): Promise<ProjectWithReport | null> {
   try {
-    const { data: project, error: projectError } = await supabase
+    const { data: project, error: projectError } = await getSupabase()
       .from("projects")
       .select("*")
       .eq("id", id)
@@ -88,10 +101,12 @@ export async function fetchProjectWithReportById(
       return null;
     }
 
-    const { data: report, error: reportError } = await supabase
+    const { data: report, error: reportError } = await getSupabase()
       .from("reports")
       .select("*")
       .eq("project_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (reportError) {
@@ -111,7 +126,7 @@ export async function uploadPhoto(projectId: string, file: File): Promise<string
   try {
     const path = `${projectId}/${Date.now()}_${file.name}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await getSupabase().storage
       .from("photos")
       .upload(path, file, {
         contentType: file.type,
@@ -122,7 +137,7 @@ export async function uploadPhoto(projectId: string, file: File): Promise<string
       throw new Error(`Failed to upload photo: ${uploadError.message}`);
     }
 
-    const { data } = supabase.storage.from("photos").getPublicUrl(path);
+    const { data } = getSupabase().storage.from("photos").getPublicUrl(path);
     return data.publicUrl;
   } catch (err) {
     if (err instanceof Error) {
@@ -139,7 +154,7 @@ export async function insertPhoto(
   isHighlight: boolean
 ): Promise<void> {
   try {
-    const { error } = await supabase.from("photos").insert({
+    const { error } = await getSupabase().from("photos").insert({
       project_id: projectId,
       storage_url: url,
       caption,
@@ -159,7 +174,7 @@ export async function insertPhoto(
 
 export async function fetchPhotosByProjectId(projectId: string): Promise<Photo[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from("photos")
       .select("*")
       .eq("project_id", projectId)
@@ -175,10 +190,7 @@ export async function fetchPhotosByProjectId(projectId: string): Promise<Photo[]
   }
 }
 
-export function computeDashboardStats(
-  projects: Project[],
-  reports: ReportRow[]
-): DashboardStats {
+export function computeDashboardStats(projects: Project[]): DashboardStats {
   const total_volunteers = projects.reduce(
     (sum, project) => sum + (project.volunteers ?? 0),
     0
@@ -193,7 +205,7 @@ export function computeDashboardStats(
     for (const partner of project.partners ?? []) {
       const normalized = partner.trim();
       if (normalized) {
-        uniquePartners.add(normalized);
+        uniquePartners.add(normalized.toLowerCase());
       }
     }
   }
@@ -204,12 +216,16 @@ export function computeDashboardStats(
     categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
   }
 
-  const sdgCounts = new Map<string, number>();
-  for (const report of reports) {
-    const sdgs = (report.sdgs ?? []) as SDGItem[];
-    for (const sdg of sdgs) {
+  const sdgCounts = new Map<string, { count: number; color: string }>();
+  for (const project of projects) {
+    for (const sdg of mapCategoryToSDGs(project.category)) {
       const label = `SDG ${sdg.number}`;
-      sdgCounts.set(label, (sdgCounts.get(label) ?? 0) + 1);
+      const existing = sdgCounts.get(label);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        sdgCounts.set(label, { count: 1, color: sdg.color });
+      }
     }
   }
 
@@ -218,12 +234,11 @@ export function computeDashboardStats(
     total_volunteers,
     total_beneficiaries,
     total_partnerships: uniquePartners.size,
-    projects_by_category: Array.from(categoryCounts.entries()).map(
-      ([category, count]) => ({ category, count })
-    ),
-    sdg_distribution: Array.from(sdgCounts.entries()).map(([sdg, count]) => ({
-      sdg,
-      count,
-    })),
+    projects_by_category: Array.from(categoryCounts.entries())
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count),
+    sdg_distribution: Array.from(sdgCounts.entries())
+      .map(([sdg, data]) => ({ sdg, count: data.count, color: data.color }))
+      .sort((a, b) => b.count - a.count),
   };
 }

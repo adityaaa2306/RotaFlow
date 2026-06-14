@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { lux } from "@/lib/theme";
 import type { ProjectCategory, ProjectFormData } from "@/types";
 
 type RequiredField =
@@ -47,8 +48,7 @@ const CATEGORIES: ProjectCategory[] = [
   "Other",
 ];
 
-const inputClassName =
-  "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500";
+const inputClassName = lux.input;
 
 function isRequiredFieldEmpty(
   field: RequiredField,
@@ -76,9 +76,7 @@ function getFieldClassName(
   formTouched: boolean
 ): string {
   const hasError = formTouched && isRequiredFieldEmpty(field, formData);
-  return hasError
-    ? "w-full rounded-lg border border-red-400 bg-white px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-500"
-    : inputClassName;
+  return hasError ? lux.inputError : inputClassName;
 }
 
 function FieldError({
@@ -116,8 +114,8 @@ function OptionalLabel({ htmlFor, children }: { htmlFor: string; children: strin
 
 function FormCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-base font-semibold text-slate-800">{title}</h2>
+    <div className={lux.card}>
+      <h2 className="mb-4 text-base font-semibold tracking-tight text-neutral-900">{title}</h2>
       {children}
     </div>
   );
@@ -168,7 +166,7 @@ function TagInput({ label, tags, placeholder, onTagsChange }: TagInputProps) {
         <button
           type="button"
           onClick={addTag}
-          className="shrink-0 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className={lux.btnSecondary}
         >
           Add
         </button>
@@ -178,7 +176,7 @@ function TagInput({ label, tags, placeholder, onTagsChange }: TagInputProps) {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm text-slate-700"
+              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-sm text-neutral-800"
             >
               {tag}
               <button
@@ -383,13 +381,13 @@ export function SubmitForm({
         <input
           id="photos"
           type="file"
-          accept="image/*"
+          accept="image/*,.heic,.heif"
           multiple
           onChange={handlePhotoChange}
-          className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border file:border-slate-200 file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-50"
+          className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border file:border-slate-200 file:bg-white file:px-5 file:py-2 file:text-sm file:font-medium file:text-neutral-900 hover:file:bg-neutral-50"
         />
         <p className="mt-2 text-xs text-slate-400">
-          Up to 5 photos · Used for AI captions
+          Up to 5 photos · JPG, PNG, or HEIC (converted automatically)
         </p>
         {photos.length > 0 && (
           <ul className="mt-4 space-y-2">

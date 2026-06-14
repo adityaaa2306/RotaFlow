@@ -13,6 +13,7 @@ export interface MissingFieldsPanelProps {
 }
 
 const FIELDS = [
+  { key: "club_name", label: "Club Name" },
   { key: "project_name", label: "Project Name" },
   { key: "category", label: "Category" },
   { key: "date", label: "Event Date" },
@@ -20,6 +21,7 @@ const FIELDS = [
   { key: "beneficiaries", label: "Beneficiaries" },
   { key: "duration_hours", label: "Duration (hours)" },
   { key: "partners", label: "Partner Organizations" },
+  { key: "description", label: "Description" },
 ] as const;
 
 type FieldKey = (typeof FIELDS)[number]["key"];
@@ -82,10 +84,10 @@ export function MissingFieldsPanel({ confidence, values }: MissingFieldsPanelPro
   const missingCount = countByLevel(confidence, "missing");
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="lux-card">
       <div className="mb-4 flex items-center gap-2">
         <CheckCircle2 className="h-5 w-5 text-green-600" />
-        <h2 className="text-lg font-semibold text-slate-800">Extraction Results</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-neutral-900">Extraction Results</h2>
       </div>
 
       <div className="divide-y divide-slate-100">

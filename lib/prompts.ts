@@ -13,14 +13,17 @@ export const SOCIAL_SYSTEM_PROMPT = `You are a social media content creator for 
 Write authentic, engaging content that celebrates volunteer work.
 Return ONLY valid JSON. No preamble. No markdown.`;
 
+export const VISION_SYSTEM_PROMPT = `You are a photo analyst for social impact organizations.
+Return ONLY valid JSON. No preamble. No explanation. No markdown fences.`;
+
 export const VISION_USER_PROMPT = `This is a photograph from a social impact event organized by a volunteer club.
 
-Analyze the image and return ONLY valid JSON:
+Analyze the image and return ONLY valid JSON with this exact shape:
 {
   "activity_description": "1-2 sentences describing what is happening in the photo.",
   "caption": "A social media caption for this photo under 100 characters.",
-  "is_highlight": true | false,
-  "tags": ["array", "of", "3-5", "descriptive", "tags"]
+  "is_highlight": true,
+  "tags": ["tag1", "tag2", "tag3"]
 }`;
 
 export function buildExtractionPrompt(narrative: string): string {
@@ -30,6 +33,7 @@ export function buildExtractionPrompt(narrative: string): string {
 
 Return exactly this JSON structure:
 {
+  "club_name": string | null,
   "project_name": string | null,
   "category": one of ["Healthcare","Education","Environment","Hunger Relief","Women Empowerment","Sanitation","Community Development","Other"] | null,
   "date": "YYYY-MM-DD" | null,
@@ -38,14 +42,17 @@ Return exactly this JSON structure:
   "duration_hours": number | null,
   "partners": string[],
   "activities": string[],
+  "description": "2-3 sentence summary of what the initiative was and what was achieved" | null,
   "confidence": {
+    "club_name": "confirmed" | "inferred" | "missing",
     "project_name": "confirmed" | "inferred" | "missing",
     "category": "confirmed" | "inferred" | "missing",
     "date": "confirmed" | "inferred" | "missing",
     "volunteers": "confirmed" | "inferred" | "missing",
     "beneficiaries": "confirmed" | "inferred" | "missing",
     "duration_hours": "confirmed" | "inferred" | "missing",
-    "partners": "confirmed" | "inferred" | "missing"
+    "partners": "confirmed" | "inferred" | "missing",
+    "description": "confirmed" | "inferred" | "missing"
   }
 }
 

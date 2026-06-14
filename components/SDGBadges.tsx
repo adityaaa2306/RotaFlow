@@ -22,7 +22,7 @@ export function SDGBadges({ sdgs }: SDGBadgesProps) {
       {sdgs.map((sdg) => (
         <div
           key={sdg.number}
-          className="flex gap-4 rounded-xl border-l-4 bg-white p-4 shadow-sm"
+          className="flex gap-4 rounded-[1.75rem] border border-slate-200/70 bg-white p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
           style={{ borderLeftColor: sdg.color }}
         >
           <div

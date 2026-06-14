@@ -9,7 +9,18 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Aileron"', "system-ui", "sans-serif"],
+      },
       colors: {
+        rota: {
+          blue: "#2A85FF",
+          "blue-dark": "#2270E0",
+        },
+        flow: {
+          navy: "#334155",
+        },
+        ink: "#1A1A1A",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -43,18 +54,21 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        chart: {
-          "1": "hsl(var(--chart-1))",
-          "2": "hsl(var(--chart-2))",
-          "3": "hsl(var(--chart-3))",
-          "4": "hsl(var(--chart-4))",
-          "5": "hsl(var(--chart-5))",
-        },
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 8px)",
+        pill: "9999px",
+        lux: "1.75rem",
+      },
+      boxShadow: {
+        lux: "0 8px 30px rgb(0 0 0 / 0.04)",
+        "lux-lg": "0 12px 40px rgb(0 0 0 / 0.06)",
+        "lux-btn": "0 4px 14px rgb(0 0 0 / 0.15)",
+      },
+      letterSpacing: {
+        tightest: "-0.04em",
       },
     },
   },

@@ -7,7 +7,8 @@ import { ConversationalInput } from "@/components/ConversationalInput";
 import { MissingFieldsPanel } from "@/components/MissingFieldsPanel";
 import { SubmitForm } from "@/components/SubmitForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { insertPhoto, insertProject, uploadPhoto } from "@/lib/supabase";
+import { insertProject } from "@/lib/supabase";
+import { lux } from "@/lib/theme";
 import type {
   ExtractedProject,
   InsertProject,
@@ -45,56 +46,23 @@ function toInsertProject(data: ProjectFormData): InsertProject {
   };
 }
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(",")[1];
-      if (!base64) {
-        reject(new Error("Failed to read photo"));
-        return;
-      }
-      resolve(base64);
-    };
-    reader.onerror = () => reject(new Error("Failed to read photo"));
-    reader.readAsDataURL(file);
-  });
-}
+async function processPhotos(projectId: string, files: File[]): Promise<void> {
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("projectId", projectId);
+    formData.append("file", file);
 
-function processPhotosInBackground(projectId: string, files: File[]) {
-  void (async () => {
-    for (const file of files) {
-      try {
-        const url = await uploadPhoto(projectId, file);
-        const imageBase64 = await fileToBase64(file);
+    const response = await fetch("/api/photos/upload", {
+      method: "POST",
+      body: formData,
+    });
 
-        const visionResponse = await fetch("/api/vision", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            imageBase64,
-            mimeType: file.type || "image/jpeg",
-          }),
-        });
+    const data = await response.json();
 
-        const visionData = await visionResponse.json();
-
-        if (visionResponse.ok) {
-          await insertPhoto(
-            projectId,
-            url,
-            visionData.caption ?? "",
-            Boolean(visionData.is_highlight)
-          );
-        } else {
-          await insertPhoto(projectId, url, "", false);
-        }
-      } catch {
-        // Fire-and-forget: photo processing failures should not block submission.
-      }
+    if (!response.ok) {
+      throw new Error(data.error ?? `Failed to upload ${file.name}`);
     }
-  })();
+  }
 }
 
 function isFormValid(data: ProjectFormData): boolean {
@@ -122,11 +90,16 @@ export default function SubmitPage() {
     setFormData((prev) => ({ ...prev, ...updates }));
   }
 
-  function handleExtracted(result: ExtractedProject) {
+  function handleExtracted(result: ExtractedProject, narrative: string) {
     setExtractedResult(result);
     setFormData((prev) => {
-      const updates: Partial<ProjectFormData> = {};
+      const updates: Partial<ProjectFormData> = {
+        raw_narrative: narrative,
+      };
 
+      if (result.club_name !== null) {
+        updates.club_name = result.club_name;
+      }
       if (result.project_name !== null) {
         updates.project_name = result.project_name;
       }
@@ -151,6 +124,11 @@ export default function SubmitPage() {
       if (result.activities.length > 0) {
         updates.activities = result.activities;
       }
+      if (result.description?.trim()) {
+        updates.description = result.description.trim();
+      } else if (narrative.trim()) {
+        updates.description = narrative.trim().slice(0, 500);
+      }
 
       return { ...prev, ...updates };
     });
@@ -171,7 +149,7 @@ export default function SubmitPage() {
       const project = await insertProject(toInsertProject(formData));
 
       if (photos.length > 0) {
-        processPhotosInBackground(project.id, photos);
+        await processPhotos(project.id, photos);
       }
 
       router.push(`/report/${project.id}`);
@@ -193,11 +171,9 @@ export default function SubmitPage() {
 
   return (
     <div className="mx-auto max-w-5xl p-8">
-      <header className="mb-8 border-b border-slate-200 pb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Submit Project</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Document your club&apos;s impact in seconds.
-        </p>
+      <header className={lux.pageHeader}>
+        <h1 className={lux.pageTitle}>Submit Project</h1>
+        <p className={lux.pageSubtitle}>Document your club&apos;s impact in seconds.</p>
       </header>
 
       <Tabs
@@ -209,7 +185,7 @@ export default function SubmitPage() {
             <ClipboardList className="h-4 w-4" />
             Manual Entry
           </TabsTrigger>
-          <TabsTrigger value="ai" className="data-[state=inactive]:text-blue-600">
+          <TabsTrigger value="ai">
             <Sparkles className="h-4 w-4" />
             AI Mode ✨
           </TabsTrigger>
@@ -250,15 +226,15 @@ export default function SubmitPage() {
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="lux-btn-primary disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          Generate Report →
+          {isSubmitting && photos.length > 0 ? "Uploading photos..." : "Generate Report →"}
           {!isSubmitting && <ArrowRight className="h-4 w-4" />}
         </button>
 
         {submitError && (
-          <div className="mt-4 flex gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+          <div className={`mt-4 flex gap-3 ${lux.bannerError}`}>
             <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
             <p className="text-sm text-red-700">{submitError}</p>
           </div>

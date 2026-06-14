@@ -1,7 +1,7 @@
 -- ImpactPilot AI — Supabase schema
 -- Run in Supabase SQL Editor (see DATABASE.md)
 
-create table projects (
+create table if not exists projects (
   id uuid primary key default gen_random_uuid(),
   club_name text not null default '',
   project_name text not null,
@@ -17,7 +17,7 @@ create table projects (
   created_at timestamptz default now()
 );
 
-create table reports (
+create table if not exists reports (
   id uuid primary key default gen_random_uuid(),
   project_id uuid references projects(id) on delete cascade,
   executive_summary text,
@@ -32,7 +32,7 @@ create table reports (
   created_at timestamptz default now()
 );
 
-create table photos (
+create table if not exists photos (
   id uuid primary key default gen_random_uuid(),
   project_id uuid references projects(id) on delete cascade,
   storage_url text not null,
@@ -45,6 +45,50 @@ alter table projects enable row level security;
 alter table reports enable row level security;
 alter table photos enable row level security;
 
-create policy "Allow all for now" on projects for all using (true);
-create policy "Allow all for now" on reports for all using (true);
-create policy "Allow all for now" on photos for all using (true);
+create policy "Allow all for now" on projects for all using (true) with check (true);
+create policy "Allow all for now" on reports for all using (true) with check (true);
+create policy "Allow all for now" on photos for all using (true) with check (true);
+
+-- Public photos bucket for uploads
+insert into storage.buckets (id, name, public)
+values ('photos', 'photos', true)
+on conflict (id) do update set public = true;
+
+create policy "Public read photos"
+on storage.objects for select
+using (bucket_id = 'photos');
+
+create policy "Allow uploads to photos"
+on storage.objects for insert
+with check (bucket_id = 'photos');
+
+create policy "Allow updates to photos"
+on storage.objects for update
+using (bucket_id = 'photos')
+with check (bucket_id = 'photos');
+
+create table if not exists instagram_connections (
+  id uuid primary key default gen_random_uuid(),
+  ig_user_id text not null unique,
+  username text,
+  access_token text not null,
+  token_expires_at timestamptz,
+  updated_at timestamptz default now()
+);
+
+alter table instagram_connections enable row level security;
+
+create policy "Allow all for now" on instagram_connections for all using (true) with check (true);
+
+create table if not exists x_connections (
+  id uuid primary key default gen_random_uuid(),
+  username text not null unique,
+  auth_token text not null,
+  ct0 text,
+  twid text,
+  updated_at timestamptz default now()
+);
+
+alter table x_connections enable row level security;
+
+create policy "Allow all for now" on x_connections for all using (true) with check (true);

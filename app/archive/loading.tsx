@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 function ProjectCardSkeleton() {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="lux-card">
       <div className="flex justify-end">
         <Skeleton className="h-6 w-24 rounded-full" />
       </div>
@@ -27,9 +27,9 @@ export default function ArchiveLoading() {
       </div>
 
       <div className="flex flex-col gap-4 md:flex-row">
-        <Skeleton className="h-10 flex-1 rounded-lg" />
-        <Skeleton className="h-10 w-40 rounded-lg" />
-        <Skeleton className="h-10 w-32 rounded-lg" />
+        <Skeleton className="h-11 flex-1 rounded-2xl" />
+        <Skeleton className="h-11 w-40 rounded-2xl" />
+        <Skeleton className="h-11 w-32 rounded-2xl" />
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">

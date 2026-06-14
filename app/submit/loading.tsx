@@ -2,13 +2,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 function FormCardSkeleton({ fields }: { fields: number }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="lux-card">
       <Skeleton className="h-5 w-48" />
       <div className="mt-4 space-y-4">
         {Array.from({ length: fields }).map((_, index) => (
           <div key={index}>
             <Skeleton className="mb-1 h-4 w-24" />
-            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-11 w-full rounded-2xl" />
           </div>
         ))}
       </div>
@@ -24,13 +24,13 @@ export default function SubmitLoading() {
         <Skeleton className="mt-2 h-4 w-72" />
       </div>
 
-      <Skeleton className="h-10 w-80 rounded-lg" />
+      <Skeleton className="h-11 w-80 rounded-full" />
 
       <FormCardSkeleton fields={4} />
       <FormCardSkeleton fields={3} />
       <FormCardSkeleton fields={2} />
 
-      <Skeleton className="h-10 w-40 rounded-lg" />
+      <Skeleton className="h-11 w-44 rounded-full" />
     </div>
   );
 }
