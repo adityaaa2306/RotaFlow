@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { lux } from "@/lib/theme";
 import type {
   ConfidenceLevel,
   ExtractionConfidence,
@@ -84,10 +85,10 @@ export function MissingFieldsPanel({ confidence, values }: MissingFieldsPanelPro
   const missingCount = countByLevel(confidence, "missing");
 
   return (
-    <div className="lux-card">
+    <div className={lux.card}>
       <div className="mb-4 flex items-center gap-2">
         <CheckCircle2 className="h-5 w-5 text-green-600" />
-        <h2 className="text-lg font-semibold tracking-tight text-neutral-900">Extraction Results</h2>
+        <h2 className={lux.sectionTitle}>Extraction Results</h2>
       </div>
 
       <div className="divide-y divide-slate-100">

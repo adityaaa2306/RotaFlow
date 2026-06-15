@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-    --primary: 214 100% 58%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 215 25% 27%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 214 100% 97%;
-    --accent-foreground: 215 25% 27%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 92%;
-    --input: 0 0% 92%;
-    --ring: 214 100% 58%;
+    --background: hsl(0 0% 98%);
+    --foreground: hsl(0 0% 10%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(0 0% 10%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(0 0% 10%);
+    --primary: hsl(214 100% 58%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(0 0% 96%);
+    --secondary-foreground: hsl(215 25% 27%);
+    --muted: hsl(0 0% 96%);
+    --muted-foreground: hsl(215 16% 47%);
+    --accent: hsl(214 100% 97%);
+    --accent-foreground: hsl(215 25% 27%);
+    --destructive: hsl(0 84% 60%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --border: hsl(0 0% 92%);
+    --input: hsl(0 0% 92%);
+    --ring: hsl(214 100% 58%);
     --radius: 1.75rem;
     --rota-blue: 214 100% 58%;
     --flow-navy: 215 25% 27%;
@@ -40,37 +40,27 @@
   }
 }
 
-/* Landing page theme (OKLCH tokens) */
+/* Landing page theme — light, matches app pages */
 .landing-theme {
   --font-sans: var(--font-inter), "Inter", sans-serif;
   --radius: 1rem;
-  --background: oklch(0.06 0.01 260);
-  --foreground: oklch(0.98 0.005 240);
-  --card: oklch(0.12 0.02 260 / 0.6);
-  --card-foreground: oklch(0.98 0.005 240);
-  --primary: oklch(0.65 0.22 255);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.18 0.02 260);
-  --secondary-foreground: oklch(0.98 0.005 240);
-  --muted: oklch(0.14 0.015 260);
-  --muted-foreground: oklch(0.65 0.02 260);
-  --accent: oklch(0.55 0.25 260);
-  --accent-foreground: oklch(0.99 0 0);
-  --border: oklch(1 0 0 / 0.08);
-  --ring: oklch(0.65 0.22 255);
-  --glow: oklch(0.62 0.26 258);
-  --gradient-primary: linear-gradient(135deg, oklch(0.72 0.2 250), oklch(0.5 0.28 265));
-  --gradient-glow: radial-gradient(
-    ellipse at center,
-    oklch(0.6 0.28 258 / 0.55),
-    transparent 70%
-  );
-  --shadow-glow: 0 0 60px -10px oklch(0.6 0.28 258 / 0.6),
-    0 0 120px -20px oklch(0.6 0.28 258 / 0.4);
-  --shadow-button: 0 10px 40px -10px oklch(0.6 0.28 258 / 0.7),
-    inset 0 1px 0 oklch(1 0 0 / 0.3);
-  --shadow-glass: 0 30px 80px -20px oklch(0 0 0 / 0.8),
-    inset 0 1px 0 oklch(1 0 0 / 0.08);
+  --background: hsl(210 40% 98%);
+  --foreground: hsl(222 47% 11%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(222 47% 11%);
+  --primary: hsl(214 100% 58%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(210 40% 96%);
+  --secondary-foreground: hsl(215 25% 27%);
+  --muted: hsl(210 40% 96%);
+  --muted-foreground: hsl(215 16% 47%);
+  --accent: hsl(214 100% 97%);
+  --accent-foreground: hsl(215 25% 27%);
+  --border: hsl(214 32% 91%);
+  --ring: hsl(214 100% 58%);
+  --gradient-primary: linear-gradient(135deg, hsl(214 100% 58%), hsl(224 76% 48%));
+  --shadow-button: 0 4px 20px rgb(42 133 255 / 0.35);
+  --shadow-glass: 0 8px 30px rgb(0 0 0 / 0.04);
 
   background: var(--background);
   color: var(--foreground);
@@ -81,35 +71,9 @@
   border-color: var(--border);
 }
 
-.landing-theme .bg-background {
-  background-color: var(--background);
-}
-
-.landing-theme .text-foreground {
-  color: var(--foreground);
-}
-
-.landing-theme .text-muted-foreground {
-  color: var(--muted-foreground);
-}
-
-.landing-theme .text-primary {
-  color: var(--primary);
-}
-
-.landing-theme .bg-primary {
-  background-color: var(--primary);
-}
-
 @layer components {
   .landing-theme .lux-card {
-    background: linear-gradient(155deg, oklch(1 0 0 / 0.06), oklch(1 0 0 / 0.01));
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid oklch(1 0 0 / 0.08);
-    box-shadow: var(--shadow-glass);
-    border-radius: 1.5rem;
-    padding: 1.5rem;
+    @apply rounded-3xl border border-slate-200/60 bg-white p-6 shadow-lux;
   }
 
   .lux-card {
@@ -147,11 +111,7 @@
   }
 
   .landing-theme .glass-card {
-    background: linear-gradient(155deg, oklch(1 0 0 / 0.06), oklch(1 0 0 / 0.01));
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid oklch(1 0 0 / 0.08);
-    box-shadow: var(--shadow-glass);
+    @apply rounded-3xl border border-slate-200/60 bg-white shadow-lux;
   }
 
   .landing-theme .btn-glow {
@@ -161,7 +121,7 @@
   }
 
   .landing-theme .text-gradient-blue {
-    background: linear-gradient(135deg, oklch(0.85 0.15 250), oklch(0.6 0.25 260));
+    background: linear-gradient(135deg, hsl(214 100% 58%), hsl(224 76% 48%));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

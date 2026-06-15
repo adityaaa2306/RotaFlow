@@ -28,6 +28,7 @@ create table if not exists reports (
   closing_statement text,
   sdgs jsonb default '[]',
   social_kit jsonb default '{}',
+  social_posts jsonb default '{}',
   volunteer_hours numeric,
   created_at timestamptz default now()
 );

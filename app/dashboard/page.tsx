@@ -29,19 +29,15 @@ import { computeDashboardStats, fetchAllProjects } from "@/lib/supabase";
 import type { DashboardStats, Project, ProjectCategory } from "@/types";
 
 const CATEGORY_BADGE_CLASSES: Record<ProjectCategory, string> = {
-  Healthcare: "bg-red-500/15 text-red-300",
-  Education: "bg-blue-500/15 text-blue-300",
-  Environment: "bg-green-500/15 text-green-300",
-  "Hunger Relief": "bg-orange-500/15 text-orange-300",
-  "Women Empowerment": "bg-purple-500/15 text-purple-300",
-  Sanitation: "bg-cyan-500/15 text-cyan-300",
-  "Community Development": "bg-indigo-500/15 text-indigo-300",
-  Other: "bg-white/10 text-muted-foreground",
+  Healthcare: "bg-red-50 text-red-700",
+  Education: "bg-blue-50 text-blue-700",
+  Environment: "bg-green-50 text-green-700",
+  "Hunger Relief": "bg-orange-50 text-orange-700",
+  "Women Empowerment": "bg-purple-50 text-purple-700",
+  Sanitation: "bg-cyan-50 text-cyan-700",
+  "Community Development": "bg-indigo-50 text-indigo-700",
+  Other: "bg-slate-50 text-slate-700",
 };
-
-const CHART_GRID = "oklch(1 0 0 / 0.08)";
-const CHART_TICK = "oklch(0.65 0.02 260)";
-const CHART_BAR = "oklch(0.65 0.22 255)";
 
 function formatDate(date: string): string {
   if (!date) {
@@ -78,9 +74,9 @@ function CategoryTooltip({
 
   const entry = payload[0].payload;
   return (
-    <div className="glass-card rounded-2xl px-3 py-2 text-sm">
-      <p className="font-medium text-foreground">{entry.category}</p>
-      <p className="text-muted-foreground">{entry.count} projects</p>
+    <div className="rounded-2xl border border-slate-200/60 bg-white px-3 py-2 text-sm shadow-lux">
+      <p className="font-medium text-slate-800">{entry.category}</p>
+      <p className="text-slate-600">{entry.count} projects</p>
     </div>
   );
 }
@@ -98,9 +94,9 @@ function SdgTooltip({
 
   const entry = payload[0].payload;
   return (
-    <div className="glass-card rounded-2xl px-3 py-2 text-sm">
-      <p className="font-medium text-foreground">{entry.sdg}</p>
-      <p className="text-muted-foreground">{entry.count} projects</p>
+    <div className="rounded-2xl border border-slate-200/60 bg-white px-3 py-2 text-sm shadow-lux">
+      <p className="font-medium text-slate-800">{entry.sdg}</p>
+      <p className="text-slate-600">{entry.count} projects</p>
     </div>
   );
 }
@@ -211,24 +207,24 @@ export default function DashboardPage() {
         <h2 className={`${lux.sectionTitle} mb-4`}>Charts</h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className={lux.card}>
-            <h3 className="font-display text-base tracking-tight text-foreground">
+            <h3 className="text-base font-semibold tracking-tight text-ink">
               Projects by Category
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-slate-500">
               Where the club focuses its energy — useful for planning and district reporting
             </p>
             {stats.projects_by_category.length === 0 ? (
-              <p className="mt-8 text-sm text-muted-foreground">No projects yet.</p>
+              <p className="mt-8 text-sm text-slate-500">No projects yet.</p>
             ) : (
               <ResponsiveContainer width="100%" height={300} className="mt-4">
                 <BarChart
                   data={stats.projects_by_category}
                   margin={{ top: 8, right: 8, left: 0, bottom: 48 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                   <XAxis
                     dataKey="category"
-                    tick={{ fill: CHART_TICK, fontSize: 10 }}
+                    tick={{ fill: "#64748B", fontSize: 10 }}
                     interval={0}
                     angle={-30}
                     textAnchor="end"
@@ -238,26 +234,26 @@ export default function DashboardPage() {
                   />
                   <YAxis
                     allowDecimals={false}
-                    tick={{ fill: CHART_TICK, fontSize: 12 }}
+                    tick={{ fill: "#64748B", fontSize: 12 }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <Tooltip content={<CategoryTooltip />} />
-                  <Bar dataKey="count" fill={CHART_BAR} radius={[4, 4, 0, 0]} name="Projects" />
+                  <Bar dataKey="count" fill="#2A85FF" radius={[4, 4, 0, 0]} name="Projects" />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
 
           <div className={lux.card}>
-            <h3 className="font-display text-base tracking-tight text-foreground">
+            <h3 className="text-base font-semibold tracking-tight text-ink">
               SDG Distribution
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-slate-500">
               Global goals alignment — useful for district and international reporting
             </p>
             {stats.sdg_distribution.length === 0 ? (
-              <p className="mt-8 text-sm text-muted-foreground">No SDG data yet.</p>
+              <p className="mt-8 text-sm text-slate-500">No SDG data yet.</p>
             ) : (
               <ResponsiveContainer width="100%" height={300} className="mt-4">
                 <PieChart>
@@ -269,7 +265,7 @@ export default function DashboardPage() {
                     cy="42%"
                     outerRadius={88}
                     innerRadius={0}
-                    stroke="oklch(0.06 0.01 260)"
+                    stroke="#fff"
                     strokeWidth={2}
                   >
                     {stats.sdg_distribution.map((entry) => (
@@ -281,7 +277,7 @@ export default function DashboardPage() {
                     verticalAlign="bottom"
                     align="center"
                     iconType="circle"
-                    wrapperStyle={{ fontSize: 12, paddingTop: 16, color: CHART_TICK }}
+                    wrapperStyle={{ fontSize: 12, paddingTop: 16, color: "#64748B" }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -341,11 +337,22 @@ export default function DashboardPage() {
                   <td className="py-3 pr-4 text-muted-foreground">{formatDate(project.date)}</td>
                   <td className="py-3">
                     {usingDemoData ? (
-                      <span className="text-muted-foreground">View Report →</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-muted-foreground">View Report →</span>
+                        <span className="text-muted-foreground">Show Socials</span>
+                      </div>
                     ) : (
-                      <Link href={`/report/${project.id}`} className={lux.link}>
-                        View Report →
-                      </Link>
+                      <div className="flex flex-col gap-1">
+                        <Link href={`/report/${project.id}`} className={lux.link}>
+                          View Report →
+                        </Link>
+                        <Link
+                          href={`/report/${project.id}?view=socials`}
+                          className={lux.link}
+                        >
+                          Show Socials
+                        </Link>
+                      </div>
                     )}
                   </td>
                 </tr>

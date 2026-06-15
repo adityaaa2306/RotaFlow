@@ -1,8 +1,9 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { lux } from "@/lib/theme";
 
 function FormCardSkeleton({ fields }: { fields: number }) {
   return (
-    <div className="lux-card">
+    <div className={lux.card}>
       <Skeleton className="h-5 w-48" />
       <div className="mt-4 space-y-4">
         {Array.from({ length: fields }).map((_, index) => (

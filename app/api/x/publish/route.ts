@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { getPublishErrorStatus, publishProjectToX } from "@/lib/getxapi";
+import { getPublishErrorStatus, getXUsername, publishProjectToX } from "@/lib/getxapi";
+import { recordSocialPost } from "@/lib/report-social";
 
 export async function POST(request: Request) {
   try {
@@ -13,6 +14,15 @@ export async function POST(request: Request) {
     }
 
     const result = await publishProjectToX(projectId);
+
+    try {
+      await recordSocialPost(projectId, "x", {
+        url: result.tweetUrl,
+        username: getXUsername(),
+      });
+    } catch {
+      // Publishing succeeded; status persistence is best-effort.
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { ReportView } from "@/components/ReportView";
 import { calculateMetrics } from "@/lib/metrics";
@@ -68,6 +68,7 @@ function reportRowToReportData(row: ReportRow, project: Project): ReportData {
       volunteer_hours: row.volunteer_hours ?? metrics.volunteer_hours,
     },
     social_kit: row.social_kit ?? EMPTY_SOCIAL_KIT,
+    social_posts: row.social_posts ?? {},
     created_at: row.created_at,
   };
 }
@@ -141,13 +142,16 @@ async function generateReportForProject(loadedProject: Project): Promise<ReportD
     sdgs: savedReport.sdgs ?? sdgs,
     metrics,
     social_kit: savedReport.social_kit ?? socialKit,
+    social_posts: savedReport.social_posts ?? {},
     created_at: savedReport.created_at,
   };
 }
 
 export default function ReportPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = params.id as string;
+  const focusSocials = searchParams.get("view") === "socials";
 
   const [project, setProject] = useState<Project | null>(null);
   const [report, setReport] = useState<ReportData | null>(null);
@@ -275,6 +279,7 @@ export default function ReportPage() {
         onRegenerateReport={handleRegenerateReport}
         isRegenerating={isGeneratingReport}
         showRegenerate={hadExistingReport}
+        focusSocials={focusSocials}
       />
     );
   }

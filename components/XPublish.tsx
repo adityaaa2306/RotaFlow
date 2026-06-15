@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { lux } from "@/lib/theme";
+import type { SocialPostRecord } from "@/types";
 
 export interface XPublishProps {
   projectId: string;
+  onPublished?: (record: SocialPostRecord) => void;
 }
 
 interface XStatus {
@@ -15,7 +17,7 @@ interface XStatus {
   username?: string | null;
 }
 
-export function XPublish({ projectId }: XPublishProps) {
+export function XPublish({ projectId, onPublished }: XPublishProps) {
   const [status, setStatus] = useState<XStatus>({ connected: false });
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -103,6 +105,12 @@ export function XPublish({ projectId }: XPublishProps) {
           {status.username ? ` (@${status.username})` : ""}.{tweetLink}
         </>
       );
+      onPublished?.({
+        platform: "x",
+        published_at: new Date().toISOString(),
+        username: status.username ?? null,
+        url: data.tweet_url ?? null,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to publish to X";
       setError(message);

@@ -4,9 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AlertCircle, Instagram, Loader2 } from "lucide-react";
 import { lux } from "@/lib/theme";
+import type { SocialPostRecord } from "@/types";
 
 export interface InstagramPublishProps {
   projectId: string;
+  onPublished?: (record: SocialPostRecord) => void;
 }
 
 interface InstagramStatus {
@@ -16,7 +18,7 @@ interface InstagramStatus {
   username?: string | null;
 }
 
-export function InstagramPublish({ projectId }: InstagramPublishProps) {
+export function InstagramPublish({ projectId, onPublished }: InstagramPublishProps) {
   const pathname = usePathname();
   const [status, setStatus] = useState<InstagramStatus>({ connected: false });
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
@@ -70,6 +72,12 @@ export function InstagramPublish({ projectId }: InstagramPublishProps) {
           status.username ? ` (@${status.username})` : ""
         }.`
       );
+      onPublished?.({
+        platform: "instagram",
+        published_at: new Date().toISOString(),
+        username: status.username ?? null,
+        url: null,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to publish to Instagram";
       setError(message);

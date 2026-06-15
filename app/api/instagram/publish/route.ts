@@ -2,6 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { publishProjectToInstagram } from "@/lib/instagram";
+import { getInstagramConnection } from "@/lib/supabase-admin";
+import { recordSocialPost } from "@/lib/report-social";
 
 export async function POST(request: Request) {
   try {
@@ -13,6 +15,16 @@ export async function POST(request: Request) {
     }
 
     const result = await publishProjectToInstagram(projectId);
+    const connection = await getInstagramConnection();
+
+    try {
+      await recordSocialPost(projectId, "instagram", {
+        url: null,
+        username: connection?.username ?? null,
+      });
+    } catch {
+      // Publishing succeeded; status persistence is best-effort.
+    }
 
     return NextResponse.json({
       success: true,

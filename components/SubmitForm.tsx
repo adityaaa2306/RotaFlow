@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { lux } from "@/lib/theme";
-import { toDateInputValue, toNumberInputValue } from "@/lib/utils";
+import { parseDateInput, toNumberInputValue } from "@/lib/utils";
 import type { ProjectCategory, ProjectFormData } from "@/types";
 
 type RequiredField =
@@ -63,7 +63,7 @@ function isRequiredFieldEmpty(
     case "category":
       return !formData.category;
     case "date":
-      return !formData.date;
+      return !parseDateInput(formData.date);
     case "volunteers":
       return formData.volunteers === "" || formData.volunteers < 0;
     case "beneficiaries":
@@ -93,21 +93,21 @@ function FieldError({
     return null;
   }
 
-  return <p className="mt-1 text-xs text-red-600">{REQUIRED_FIELD_ERRORS[field]}</p>;
+  return <p className={lux.fieldError}>{REQUIRED_FIELD_ERRORS[field]}</p>;
 }
 
 function RequiredLabel({ htmlFor, children }: { htmlFor: string; children: string }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-slate-700">
+    <label htmlFor={htmlFor} className={lux.label}>
       {children}
-      <span className="ml-0.5 text-red-500">*</span>
+      <span className={lux.labelRequired}>*</span>
     </label>
   );
 }
 
 function OptionalLabel({ htmlFor, children }: { htmlFor: string; children: string }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-slate-700">
+    <label htmlFor={htmlFor} className={lux.label}>
       {children}
     </label>
   );
@@ -116,7 +116,7 @@ function OptionalLabel({ htmlFor, children }: { htmlFor: string; children: strin
 function FormCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className={lux.card}>
-      <h2 className="mb-4 text-base font-semibold tracking-tight text-neutral-900">{title}</h2>
+      <h2 className={lux.formTitle}>{title}</h2>
       {children}
     </div>
   );
@@ -177,13 +177,13 @@ function TagInput({ label, tags, placeholder, onTagsChange }: TagInputProps) {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-sm text-neutral-800"
+              className={lux.tag}
             >
               {tag}
               <button
                 type="button"
                 onClick={() => removeTag(tag)}
-                className="text-slate-500 hover:text-slate-900"
+                className="text-muted-foreground transition hover:text-foreground"
                 aria-label={`Remove ${tag}`}
               >
                 <X className="h-3 w-3" />
@@ -257,8 +257,8 @@ export function SubmitForm({
                 id="category"
                 className={
                   formTouched && isRequiredFieldEmpty("category", formData)
-                    ? "border-red-400 focus:ring-red-500"
-                    : undefined
+                    ? `${lux.inputError} flex h-11 items-center justify-between`
+                    : `${lux.input} flex h-11 items-center justify-between`
                 }
               >
                 <SelectValue placeholder="Select category" />
@@ -277,11 +277,18 @@ export function SubmitForm({
             <RequiredLabel htmlFor="date">Date</RequiredLabel>
             <input
               id="date"
-              type="date"
-              value={toDateInputValue(formData.date)}
-              onChange={(event) =>
-                onChange({ date: toDateInputValue(event.target.value) })
-              }
+              type="text"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="YYYY-MM-DD or DD-MM-YYYY"
+              value={formData.date}
+              onChange={(event) => onChange({ date: event.target.value })}
+              onBlur={(event) => {
+                const normalized = parseDateInput(event.target.value);
+                if (normalized !== event.target.value) {
+                  onChange({ date: normalized });
+                }
+              }}
               className={getFieldClassName("date", formData, formTouched)}
             />
             <FieldError field="date" formData={formData} formTouched={formTouched} />
@@ -332,7 +339,6 @@ export function SubmitForm({
             <input
               id="duration_hours"
               type="text"
-              inputMode="decimal"
               autoComplete="off"
               value={toNumberInputValue(formData.duration_hours)}
               onChange={(event) => {
@@ -383,15 +389,15 @@ export function SubmitForm({
           accept="image/*"
           multiple
           onChange={handlePhotoChange}
-          className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border file:border-slate-200 file:bg-white file:px-5 file:py-2 file:text-sm file:font-medium file:text-neutral-900 hover:file:bg-neutral-50"
+          className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-full file:border file:border-white/15 file:bg-white/10 file:px-5 file:py-2 file:text-sm file:font-medium file:text-foreground hover:file:bg-white/15"
         />
-        <p className="mt-2 text-xs text-slate-400">
+        <p className="mt-2 text-xs text-muted-foreground">
           Up to 5 photos · JPG, PNG, or HEIC (converted automatically)
         </p>
         {photos.length > 0 && (
           <ul className="mt-4 space-y-2">
             {photos.map((file) => (
-              <li key={`${file.name}-${file.size}`} className="text-sm text-slate-600">
+              <li key={`${file.name}-${file.size}`} className="text-sm text-muted-foreground">
                 {file.name} · {formatFileSize(file.size)}
               </li>
             ))}

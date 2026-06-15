@@ -143,10 +143,10 @@ export function ConversationalInput({ onExtracted }: ConversationalInputProps) {
   }
 
   return (
-    <div className="lux-card">
+    <div className={lux.card}>
       <div className="mb-4 flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-rota-blue" />
-        <h2 className="text-lg font-semibold tracking-tight text-ink">Describe Your Event</h2>
+        <h2 className={lux.sectionTitle}>Describe Your Event</h2>
       </div>
 
       <textarea
@@ -171,7 +171,7 @@ export function ConversationalInput({ onExtracted }: ConversationalInputProps) {
           type="button"
           onClick={() => handleAutoFill()}
           disabled={!canExtract}
-          className="lux-btn-primary disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${lux.btnPrimary} disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {isExtracting && <Loader2 className="h-4 w-4 animate-spin" />}
           ✨ Auto-Fill with AI

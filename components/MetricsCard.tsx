@@ -13,40 +13,40 @@ const iconColorClasses: Record<
   NonNullable<MetricsCardProps["color"]>,
   string
 > = {
-  blue: "text-primary bg-primary/15",
-  green: "text-emerald-300 bg-emerald-500/15",
-  purple: "text-violet-300 bg-violet-500/15",
-  orange: "text-amber-300 bg-amber-500/15",
+  blue: "text-blue-700 bg-blue-50",
+  green: "text-green-700 bg-green-50",
+  purple: "text-purple-700 bg-purple-50",
+  orange: "text-orange-700 bg-orange-50",
 };
+
+const defaultIconClassName = "text-rota-blue bg-rota-blue/10";
 
 export function MetricsCard({
   label,
   value,
   icon: Icon,
   unit,
-  color = "blue",
+  color,
   description,
 }: MetricsCardProps) {
+  const iconClassName = color ? iconColorClasses[color] : defaultIconClassName;
+
   return (
-    <div className="glass-card rounded-3xl p-6">
+    <div className="lux-card">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium tracking-wide text-muted-foreground">{label}</p>
-          <p className="mt-2 font-display text-3xl tracking-tight text-foreground">
+          <p className="text-sm font-medium tracking-wide text-slate-500">{label}</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-ink">
             {value}
-            {unit && (
-              <span className="ml-1 font-sans text-lg font-normal text-muted-foreground">
-                {unit}
-              </span>
-            )}
+            {unit && <span className="ml-1 text-lg font-normal text-slate-400">{unit}</span>}
           </p>
         </div>
-        <div className={`rounded-2xl p-2.5 ${iconColorClasses[color]}`}>
+        <div className={`rounded-2xl p-2.5 ${iconClassName}`}>
           <Icon className="h-5 w-5" />
         </div>
       </div>
       {description && (
-        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{description}</p>
+        <p className="mt-3 text-xs leading-relaxed text-slate-500">{description}</p>
       )}
     </div>
   );

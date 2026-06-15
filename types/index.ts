@@ -82,6 +82,17 @@ export interface SocialKit {
   };
 }
 
+export type SocialPlatform = "instagram" | "linkedin" | "x";
+
+export interface SocialPostRecord {
+  platform: SocialPlatform;
+  published_at: string;
+  url?: string | null;
+  username?: string | null;
+}
+
+export type SocialPosts = Partial<Record<SocialPlatform, SocialPostRecord>>;
+
 export interface ReportData {
   id: string;
   project_id: string;
@@ -94,6 +105,7 @@ export interface ReportData {
   sdgs: SDGItem[];
   metrics: ImpactMetrics;
   social_kit: SocialKit;
+  social_posts?: SocialPosts;
   created_at: string;
 }
 
@@ -142,6 +154,7 @@ export interface InsertReport {
   closing_statement?: string;
   sdgs?: SDGItem[];
   social_kit?: SocialKit;
+  social_posts?: SocialPosts;
   volunteer_hours?: number;
 }
 
@@ -156,6 +169,7 @@ export interface ReportRow {
   closing_statement: string | null;
   sdgs: SDGItem[] | null;
   social_kit: SocialKit | null;
+  social_posts: SocialPosts | null;
   volunteer_hours: number | null;
   created_at: string;
 }

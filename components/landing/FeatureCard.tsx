@@ -10,15 +10,7 @@ export interface FeatureCardProps {
 
 export function FeatureCard({ icon: Icon, title, body, tag }: FeatureCardProps) {
   return (
-    <article className="group relative overflow-hidden rounded-3xl glass-card p-7 transition duration-300 hover:-translate-y-1 hover:border-white/20">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-100"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 100%, oklch(0.55 0.28 258 / 0.25), transparent 65%)",
-        }}
-        aria-hidden
-      />
+    <article className="group relative overflow-hidden rounded-3xl glass-card p-7 transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lux-lg">
       <div className="relative flex items-start justify-between">
         <div className="btn-glow grid h-11 w-11 place-items-center rounded-2xl">
           <Icon className="h-5 w-5" strokeWidth={1.75} />

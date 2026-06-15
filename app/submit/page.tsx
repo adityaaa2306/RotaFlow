@@ -9,7 +9,7 @@ import { SubmitForm } from "@/components/SubmitForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { insertProject } from "@/lib/supabase";
 import { lux } from "@/lib/theme";
-import { toDateInputValue } from "@/lib/utils";
+import { parseDateInput } from "@/lib/utils";
 import type {
   ExtractedProject,
   InsertProject,
@@ -67,11 +67,13 @@ async function processPhotos(projectId: string, files: File[]): Promise<void> {
 }
 
 function isFormValid(data: ProjectFormData): boolean {
+  const normalizedDate = parseDateInput(data.date);
+
   return (
     data.club_name.trim().length > 0 &&
     data.project_name.trim().length > 0 &&
     Boolean(data.category) &&
-    Boolean(data.date) &&
+    Boolean(normalizedDate) &&
     data.volunteers !== "" &&
     data.beneficiaries !== ""
   );
@@ -107,8 +109,8 @@ export default function SubmitPage() {
       if (result.category !== null) {
         updates.category = result.category;
       }
-      if (result.date !== null) {
-        updates.date = toDateInputValue(result.date);
+      if (result.date != null && String(result.date).trim()) {
+        updates.date = parseDateInput(String(result.date));
       }
       if (result.volunteers !== null) {
         updates.volunteers = result.volunteers;
@@ -138,7 +140,16 @@ export default function SubmitPage() {
   async function handleSubmit() {
     setFormTouched(true);
 
-    if (!isFormValid(formData)) {
+    const normalizedFormData: ProjectFormData = {
+      ...formData,
+      date: parseDateInput(formData.date),
+    };
+
+    if (normalizedFormData.date !== formData.date) {
+      setFormData(normalizedFormData);
+    }
+
+    if (!isFormValid(normalizedFormData)) {
       setSubmitError("Please fill in all required fields.");
       return;
     }
@@ -147,7 +158,7 @@ export default function SubmitPage() {
     setSubmitError(null);
 
     try {
-      const project = await insertProject(toInsertProject(formData));
+      const project = await insertProject(toInsertProject(normalizedFormData));
 
       if (photos.length > 0) {
         await processPhotos(project.id, photos);
@@ -209,11 +220,9 @@ export default function SubmitPage() {
 
             {extractedResult && (
               <div className="flex items-center gap-4">
-                <div className="h-px flex-1 bg-slate-200" />
-                <span className="text-sm text-slate-500">
-                  Review and complete the form below
-                </span>
-                <div className="h-px flex-1 bg-slate-200" />
+                <div className={lux.divider} />
+                <span className={lux.mutedText}>Review and complete the form below</span>
+                <div className={lux.divider} />
               </div>
             )}
 
@@ -227,7 +236,7 @@ export default function SubmitPage() {
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="lux-btn-primary disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${lux.btnPrimary} disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
           {isSubmitting && photos.length > 0 ? "Uploading photos..." : "Generate Report →"}
