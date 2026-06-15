@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { lux } from "@/lib/theme";
-import { parseDateInput, toNumberInputValue } from "@/lib/utils";
+import { parseDateInput, toDateStringField, toNumberInputValue } from "@/lib/utils";
 import type { ProjectCategory, ProjectFormData } from "@/types";
 
 type RequiredField =
@@ -274,20 +274,23 @@ export function SubmitForm({
             <FieldError field="category" formData={formData} formTouched={formTouched} />
           </div>
           <div>
-            <RequiredLabel htmlFor="date">Date</RequiredLabel>
+            <RequiredLabel htmlFor="event_date">Date</RequiredLabel>
             <input
-              id="date"
+              id="event_date"
+              name="event_date"
               type="text"
               autoComplete="off"
               spellCheck={false}
-              placeholder="YYYY-MM-DD or DD-MM-YYYY"
-              value={formData.date}
-              onChange={(event) => onChange({ date: event.target.value })}
+              enterKeyHint="next"
+              placeholder="YYYY-MM-DD"
+              value={toDateStringField(formData.date)}
+              onChange={(event) => {
+                const raw = event.target.value.replace(/[^\d-]/g, "").slice(0, 10);
+                onChange({ date: raw });
+              }}
               onBlur={(event) => {
                 const normalized = parseDateInput(event.target.value);
-                if (normalized !== event.target.value) {
-                  onChange({ date: normalized });
-                }
+                onChange({ date: normalized });
               }}
               className={getFieldClassName("date", formData, formTouched)}
             />
@@ -302,9 +305,10 @@ export function SubmitForm({
             <RequiredLabel htmlFor="volunteers">Volunteers</RequiredLabel>
             <input
               id="volunteers"
+              name="volunteers"
               type="text"
-              inputMode="numeric"
               autoComplete="off"
+              enterKeyHint="next"
               value={toNumberInputValue(formData.volunteers)}
               onChange={(event) => {
                 const raw = event.target.value.replace(/[^\d]/g, "");
@@ -320,9 +324,10 @@ export function SubmitForm({
             <RequiredLabel htmlFor="beneficiaries">Beneficiaries</RequiredLabel>
             <input
               id="beneficiaries"
+              name="beneficiaries"
               type="text"
-              inputMode="numeric"
               autoComplete="off"
+              enterKeyHint="next"
               value={toNumberInputValue(formData.beneficiaries)}
               onChange={(event) => {
                 const raw = event.target.value.replace(/[^\d]/g, "");

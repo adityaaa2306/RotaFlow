@@ -3,7 +3,17 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { callNimJson } from "@/lib/nim";
 import { buildExtractionPrompt } from "@/lib/prompts";
+import { parseDateInput } from "@/lib/utils";
 import type { ExtractedProject } from "@/types";
+
+function normalizeExtractedProject(result: ExtractedProject): ExtractedProject {
+  const normalizedDate = result.date == null ? null : parseDateInput(result.date);
+
+  return {
+    ...result,
+    date: normalizedDate || null,
+  };
+}
 
 export async function POST(request: Request) {
   try {
@@ -14,8 +24,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "narrative is required" }, { status: 400 });
     }
 
-    const result = await callNimJson<ExtractedProject>(
-      buildExtractionPrompt(narrative.trim())
+    const result = normalizeExtractedProject(
+      await callNimJson<ExtractedProject>(buildExtractionPrompt(narrative.trim()))
     );
 
     return NextResponse.json(result, { status: 200 });

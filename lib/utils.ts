@@ -5,13 +5,48 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** iOS Safari rejects invalid values on type="date" with "The string did not match the pattern". */
-export function toDateInputValue(value: string | null | undefined): string {
-  if (!value?.trim()) {
+/** Strip invisible whitespace and coerce unknown values before date parsing. */
+export function sanitizeDateRaw(value: unknown): string {
+  if (value == null) {
     return "";
   }
 
-  const trimmed = value.trim();
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      return "";
+    }
+    return value.toISOString().slice(0, 10);
+  }
+
+  if (typeof value === "object") {
+    return "";
+  }
+
+  return String(value).replace(/[\r\n\t\u00a0\u200b-\u200d\ufeff]/g, "").trim();
+}
+
+/** Safe string for a controlled date text input (never objects / hidden whitespace). */
+export function toDateStringField(value: unknown): string {
+  const cleaned = sanitizeDateRaw(value);
+  if (!cleaned) {
+    return "";
+  }
+
+  // Keep partial typing like 2026-05 while the user edits.
+  if (/^\d{0,4}(-\d{0,2}(-\d{0,2})?)?$/.test(cleaned)) {
+    return cleaned;
+  }
+
+  return parseDateInput(cleaned) || cleaned;
+}
+
+/** iOS Safari rejects invalid values on type="date" with "The string did not match the pattern". */
+export function toDateInputValue(value: string | null | undefined): string {
+  const trimmed = sanitizeDateRaw(value);
+  if (!trimmed) {
+    return "";
+  }
+
   const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) {
     return "";
@@ -34,17 +69,16 @@ export function toDateInputValue(value: string | null | undefined): string {
 }
 
 /** Normalize free-text / locale dates to yyyy-mm-dd for storage and validation. */
-export function parseDateInput(value: string | null | undefined): string {
-  const iso = toDateInputValue(value);
-  if (iso) {
-    return iso;
-  }
-
-  if (!value?.trim()) {
+export function parseDateInput(value: unknown): string {
+  const trimmed = sanitizeDateRaw(value);
+  if (!trimmed) {
     return "";
   }
 
-  const trimmed = value.trim();
+  const iso = toDateInputValue(trimmed);
+  if (iso) {
+    return iso;
+  }
 
   const isoDate = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
   if (isoDate) {

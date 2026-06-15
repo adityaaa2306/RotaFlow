@@ -33,10 +33,10 @@ const EMPTY_FORM_DATA: ProjectFormData = {
 
 function toInsertProject(data: ProjectFormData): InsertProject {
   return {
-    club_name: data.club_name,
-    project_name: data.project_name,
+    club_name: data.club_name.trim(),
+    project_name: data.project_name.trim(),
     category: (data.category || "Other") as ProjectCategory,
-    date: data.date,
+    date: parseDateInput(data.date),
     volunteers: typeof data.volunteers === "number" ? data.volunteers : 0,
     beneficiaries: typeof data.beneficiaries === "number" ? data.beneficiaries : 0,
     duration_hours: typeof data.duration_hours === "number" ? data.duration_hours : 0,
@@ -182,7 +182,14 @@ export default function SubmitPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-8">
+    <form
+      noValidate
+      className="mx-auto max-w-5xl p-8"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void handleSubmit();
+      }}
+    >
       <header className={lux.pageHeader}>
         <h1 className={lux.pageTitle}>Submit Project</h1>
         <p className={lux.pageSubtitle}>Document your club&apos;s impact in seconds.</p>
@@ -233,8 +240,7 @@ export default function SubmitPage() {
 
       <div className="mt-8">
         <button
-          type="button"
-          onClick={handleSubmit}
+          type="submit"
           disabled={isSubmitting}
           className={`${lux.btnPrimary} disabled:cursor-not-allowed disabled:opacity-50`}
         >
@@ -250,6 +256,6 @@ export default function SubmitPage() {
           </div>
         )}
       </div>
-    </div>
+    </form>
   );
 }
