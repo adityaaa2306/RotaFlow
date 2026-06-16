@@ -7,8 +7,9 @@ import { ConversationalInput } from "@/components/ConversationalInput";
 import { MissingFieldsPanel } from "@/components/MissingFieldsPanel";
 import { SubmitForm } from "@/components/SubmitForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { preparePhotoForUpload } from "@/lib/client-image";
 import { fetchJson } from "@/lib/fetch-json";
-import { insertProject } from "@/lib/supabase";
+import { insertPhoto, insertProject, uploadPhoto } from "@/lib/supabase";
 import { lux } from "@/lib/theme";
 import { parseDateInput } from "@/lib/utils";
 import type {
@@ -49,18 +50,38 @@ function toInsertProject(data: ProjectFormData): InsertProject {
 }
 
 async function processPhotos(projectId: string, files: File[]): Promise<void> {
-  for (const file of files) {
+  for (const originalFile of files) {
+    const file = await preparePhotoForUpload(originalFile);
     const formData = new FormData();
     formData.append("projectId", projectId);
     formData.append("file", file);
 
-    const { response, data } = await fetchJson<{ error?: string }>("/api/photos/upload", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const { response, data } = await fetchJson<{ error?: string }>("/api/photos/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-    if (!response.ok) {
-      throw new Error(data.error ?? `Failed to upload ${file.name}`);
+      if (!response.ok) {
+        throw new Error(data.error ?? `Failed to upload ${originalFile.name}`);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : `Failed to upload ${originalFile.name}`;
+
+      if (!message.includes("Server returned non-JSON")) {
+        throw new Error(`Could not upload ${originalFile.name}: ${message}`);
+      }
+
+      try {
+        const storageUrl = await uploadPhoto(projectId, file);
+        await insertPhoto(projectId, storageUrl, "", false);
+      } catch (fallbackErr) {
+        const fallbackMessage =
+          fallbackErr instanceof Error ? fallbackErr.message : "Fallback upload failed";
+        throw new Error(
+          `Could not upload ${originalFile.name}: ${fallbackMessage}. API upload also failed: ${message}`
+        );
+      }
     }
   }
 }
