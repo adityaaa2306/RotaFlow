@@ -9,8 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DateSelectField } from "@/components/DateSelectField";
 import { lux } from "@/lib/theme";
-import { parseDateInput, toDateStringField, toNumberInputValue } from "@/lib/utils";
+import { parseDateInput, toNumberInputValue } from "@/lib/utils";
 import type { ProjectCategory, ProjectFormData } from "@/types";
 
 type RequiredField =
@@ -275,24 +276,11 @@ export function SubmitForm({
           </div>
           <div>
             <RequiredLabel htmlFor="event_date">Date</RequiredLabel>
-            <input
+            <DateSelectField
               id="event_date"
-              name="event_date"
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
-              enterKeyHint="next"
-              placeholder="YYYY-MM-DD"
-              value={toDateStringField(formData.date)}
-              onChange={(event) => {
-                const raw = event.target.value.replace(/[^\d-]/g, "").slice(0, 10);
-                onChange({ date: raw });
-              }}
-              onBlur={(event) => {
-                const normalized = parseDateInput(event.target.value);
-                onChange({ date: normalized });
-              }}
-              className={getFieldClassName("date", formData, formTouched)}
+              value={formData.date}
+              onChange={(date) => onChange({ date })}
+              hasError={formTouched && isRequiredFieldEmpty("date", formData)}
             />
             <FieldError field="date" formData={formData} formTouched={formTouched} />
           </div>

@@ -7,6 +7,7 @@ import { ConversationalInput } from "@/components/ConversationalInput";
 import { MissingFieldsPanel } from "@/components/MissingFieldsPanel";
 import { SubmitForm } from "@/components/SubmitForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { fetchJson } from "@/lib/fetch-json";
 import { insertProject } from "@/lib/supabase";
 import { lux } from "@/lib/theme";
 import { parseDateInput } from "@/lib/utils";
@@ -53,12 +54,10 @@ async function processPhotos(projectId: string, files: File[]): Promise<void> {
     formData.append("projectId", projectId);
     formData.append("file", file);
 
-    const response = await fetch("/api/photos/upload", {
+    const { response, data } = await fetchJson<{ error?: string }>("/api/photos/upload", {
       method: "POST",
       body: formData,
     });
-
-    const data = await response.json();
 
     if (!response.ok) {
       throw new Error(data.error ?? `Failed to upload ${file.name}`);

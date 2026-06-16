@@ -36,7 +36,7 @@ export function getGetXSetupMessage(): string {
   if (missing.length === 0) {
     return "";
   }
-  return `Add ${missing.join(" and ")} to .env.local, then restart npm run dev.`;
+  return `Add ${missing.join(" and ")} to your Vercel environment variables (or .env.local for local dev), then redeploy.`;
 }
 
 export function getXUsername(): string {
@@ -137,7 +137,8 @@ async function createTweet(input: {
     body: JSON.stringify(body),
   });
 
-  const payload = (await response.json()) as {
+  const rawBody = await response.text();
+  let payload: {
     status?: string;
     error?: string;
     data?: {
@@ -145,6 +146,15 @@ async function createTweet(input: {
       text?: string;
     };
   };
+
+  try {
+    payload = JSON.parse(rawBody) as typeof payload;
+  } catch {
+    throw new GetXApiError(
+      `GetXAPI returned a non-JSON response (${response.status}). Check GETXAPI_API_KEY on Vercel.`,
+      "API"
+    );
+  }
 
   if (!response.ok) {
     const apiError = payload.error ?? `GetXAPI error (${response.status})`;

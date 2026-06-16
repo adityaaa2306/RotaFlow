@@ -9,6 +9,18 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/x/status",
+        destination: "/api/twitter/status",
+      },
+      {
+        source: "/api/x/publish",
+        destination: "/api/twitter/publish",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

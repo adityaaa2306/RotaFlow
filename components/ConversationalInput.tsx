@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { AlertCircle, Loader2, Mic, Sparkles } from "lucide-react";
+import { fetchJson } from "@/lib/fetch-json";
 import { lux } from "@/lib/theme";
 import { SAMPLE_NARRATIVES } from "@/lib/sample-data";
 import type { ExtractedProject } from "@/types";
@@ -37,19 +38,20 @@ export function ConversationalInput({ onExtracted }: ConversationalInputProps) {
     setError(null);
 
     try {
-      const response = await fetch("/api/extract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ narrative: text }),
-      });
-
-      const data = await response.json();
+      const { response, data } = await fetchJson<ExtractedProject & { error?: string }>(
+        "/api/extract",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ narrative: text }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(data.error ?? "Failed to extract project data");
       }
 
-      onExtracted(data as ExtractedProject, text);
+      onExtracted(data, text);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to extract project data";
       setError(message);

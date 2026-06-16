@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { fetchJson } from "@/lib/fetch-json";
 import { lux } from "@/lib/theme";
 import type { SocialPostRecord } from "@/types";
 
@@ -27,16 +28,19 @@ export function XPublish({ projectId, onPublished }: XPublishProps) {
 
   const loadStatus = useCallback(async () => {
     setIsLoadingStatus(true);
+    setError(null);
     try {
-      const response = await fetch("/api/x/status");
-      const data = await response.json();
+      const { response, data } = await fetchJson<XStatus & { error?: string }>(
+        "/api/twitter/status"
+      );
       if (!response.ok) {
         throw new Error(data.error ?? "Failed to check X connection");
       }
-      setStatus(data as XStatus);
+      setStatus(data);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to check X connection";
       setError(message);
+      setStatus({ connected: false, configured: false });
     } finally {
       setIsLoadingStatus(false);
     }
@@ -53,13 +57,16 @@ export function XPublish({ projectId, onPublished }: XPublishProps) {
     setErrorTone("red");
 
     try {
-      const response = await fetch("/api/x/publish", {
+      const { response, data } = await fetchJson<{
+        error?: string;
+        code?: string;
+        tweet_url?: string | null;
+        photo_count?: number;
+      }>("/api/twitter/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId }),
       });
-
-      const data = await response.json();
 
       if (!response.ok) {
         if (data.code === "INSUFFICIENT_CREDITS") {
@@ -75,8 +82,7 @@ export function XPublish({ projectId, onPublished }: XPublishProps) {
               >
                 getxapi.com
               </a>{" "}
-              (~$0.002 per tweet), restart isn&apos;t needed — just click Publish again after
-              topping up.
+              (~$0.002 per tweet), then click Publish again after topping up.
             </>
           );
           return;
@@ -101,7 +107,7 @@ export function XPublish({ projectId, onPublished }: XPublishProps) {
 
       setSuccessMessage(
         <>
-          Published {data.photo_count} photo{data.photo_count === 1 ? "" : "s"} to X
+          Published {data.photo_count ?? 0} photo{(data.photo_count ?? 0) === 1 ? "" : "s"} to X
           {status.username ? ` (@${status.username})` : ""}.{tweetLink}
         </>
       );
@@ -129,16 +135,13 @@ export function XPublish({ projectId, onPublished }: XPublishProps) {
       </div>
 
       <p className="text-sm text-slate-600">
-        Posts to <strong>@codeappetizer</strong> via GetXAPI using{" "}
-        <code className="rounded bg-slate-100 px-1">GETXAPI_API_KEY</code> and{" "}
-        <code className="rounded bg-slate-100 px-1">GETXAPI_AUTH_TOKEN</code> in{" "}
-        <code className="rounded bg-slate-100 px-1">.env.local</code>. Up to 4 project photos
-        with a tweet from the report and social kit.
+        Posts to <strong>@codeappetizer</strong> via GetXAPI. Up to 4 project photos with a tweet
+        from the report and social kit.
       </p>
 
       {status.configured === false && status.setup_message && (
         <div className={`mt-4 ${lux.alertWarning}`}>
-          <p className="font-medium">GetXAPI not configured yet</p>
+          <p className="font-medium">GetXAPI not configured on this deployment</p>
           <p className="mt-2">{status.setup_message}</p>
         </div>
       )}
@@ -166,8 +169,8 @@ export function XPublish({ projectId, onPublished }: XPublishProps) {
           </>
         ) : (
           <span className="text-sm text-slate-500">
-            Add GETXAPI_API_KEY and GETXAPI_AUTH_TOKEN to `.env.local`, then restart the dev
-            server.
+            Add GETXAPI_API_KEY and GETXAPI_AUTH_TOKEN in your Vercel project environment
+            variables, then redeploy.
           </span>
         )}
       </div>
