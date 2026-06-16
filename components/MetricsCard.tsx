@@ -32,16 +32,16 @@ export function MetricsCard({
   const iconClassName = color ? iconColorClasses[color] : defaultIconClassName;
 
   return (
-    <div className="lux-card">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium tracking-wide text-slate-500">{label}</p>
+    <div className="lux-card min-w-0 overflow-hidden">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <p className="break-words text-sm font-medium text-slate-500">{label}</p>
           <p className="mt-2 text-3xl font-bold tracking-tight text-ink">
             {value}
             {unit && <span className="ml-1 text-lg font-normal text-slate-400">{unit}</span>}
           </p>
         </div>
-        <div className={`rounded-2xl p-2.5 ${iconClassName}`}>
+        <div className={`shrink-0 self-start rounded-2xl p-2.5 ${iconClassName}`}>
           <Icon className="h-5 w-5" />
         </div>
       </div>

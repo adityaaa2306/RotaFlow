@@ -106,30 +106,50 @@ function addSectionToPdf(
   return cursorY + SECTION_GAP_MM;
 }
 
+function createPdfRenderRoot(root: HTMLElement): HTMLElement {
+  const clone = root.cloneNode(true) as HTMLElement;
+  clone.id = "pdf-content-render";
+  clone.classList.add("pdf-render-mode");
+  clone.style.position = "absolute";
+  clone.style.left = "-10000px";
+  clone.style.top = "0";
+  clone.style.background = "#ffffff";
+
+  document.body.appendChild(clone);
+  return clone;
+}
+
 export async function generatePDF(projectName: string): Promise<void> {
   const root = document.getElementById("pdf-content");
   if (!root) {
     throw new Error("PDF content element not found");
   }
 
-  const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-pdf-section]"));
-  if (sections.length === 0) {
-    throw new Error("No PDF sections found");
+  const renderRoot = createPdfRenderRoot(root);
+
+  try {
+    const sections = Array.from(renderRoot.querySelectorAll<HTMLElement>("[data-pdf-section]"));
+    if (sections.length === 0) {
+      throw new Error("No PDF sections found");
+    }
+
+    const pdf = new jsPDF("p", "mm", "a4");
+    let y = MARGIN_MM;
+
+    for (const section of sections) {
+      const canvas = await html2canvas(section, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: 960,
+      });
+
+      y = addSectionToPdf(pdf, canvas, y);
+    }
+
+    pdf.save(`${projectName.replace(/\s+/g, "_")}_ImpactReport.pdf`);
+  } finally {
+    renderRoot.remove();
   }
-
-  const pdf = new jsPDF("p", "mm", "a4");
-  let y = MARGIN_MM;
-
-  for (const section of sections) {
-    const canvas = await html2canvas(section, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-    });
-
-    y = addSectionToPdf(pdf, canvas, y);
-  }
-
-  pdf.save(`${projectName.replace(/\s+/g, "_")}_ImpactReport.pdf`);
 }

@@ -130,29 +130,29 @@ export function ReportView({
 
   return (
     <div>
-      <div className="sticky top-20 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-8 py-4">
+      <div className="border-b border-slate-200/80 bg-white/95 backdrop-blur-md md:sticky md:top-[4.5rem] md:z-40">
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3 sm:px-6 md:flex-row md:items-center md:justify-between md:px-8 md:py-4">
           <Link
             href={focusSocials ? "/dashboard" : "/archive"}
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900"
+            className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900"
           >
             <ArrowLeft className="h-4 w-4" />
             {focusSocials ? "Back to Dashboard" : "Back"}
           </Link>
-          <p className="font-semibold text-slate-900">
+          <p className="min-w-0 break-words text-lg font-semibold leading-tight text-slate-900 md:text-center md:text-base">
             {focusSocials ? "Social Media Kit" : project.project_name}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
             {!focusSocials && showRegenerate && onRegenerateReport && (
               <button
                 type="button"
                 onClick={onRegenerateReport}
                 disabled={isRegenerating || isGeneratingPDF}
-                className={`${lux.btnSecondary} disabled:cursor-not-allowed disabled:opacity-50`}
+                className="inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-full border border-slate-200/80 bg-white px-3 text-center text-xs font-medium leading-tight text-[#334155] transition duration-200 hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:text-sm"
               >
                 {isRegenerating && <Loader2 className="h-4 w-4 animate-spin" />}
-                <RefreshCw className="h-4 w-4" />
-                Regenerate Report
+                <RefreshCw className="h-4 w-4 shrink-0" />
+                <span>Regenerate<span className="hidden sm:inline"> Report</span></span>
               </button>
             )}
             {!focusSocials && (
@@ -160,10 +160,10 @@ export function ReportView({
                 type="button"
                 onClick={onDownloadPDF}
                 disabled={isGeneratingPDF || isRegenerating}
-                className="lux-btn-primary disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-full bg-[#2A85FF] px-3 text-center text-xs font-semibold leading-tight text-white shadow-[0_4px_20px_rgb(42,133,255,0.35)] transition duration-200 hover:bg-[#2270E0] disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:text-sm"
               >
                 {isGeneratingPDF && <Loader2 className="h-4 w-4 animate-spin" />}
-                Download PDF
+                <span>Download PDF</span>
               </button>
             )}
             {focusSocials && (
@@ -176,10 +176,10 @@ export function ReportView({
       </div>
 
       {!focusSocials && (
-        <div id="pdf-content" className="mx-auto max-w-5xl space-y-6 bg-white p-8">
+        <div id="pdf-content" className="mx-auto w-full max-w-5xl space-y-6 bg-white px-4 py-6 sm:px-6 lg:p-8">
           <div data-pdf-section className="lux-card">
             <p className="text-sm text-slate-500">{project.club_name}</p>
-            <h1 className="text-4xl font-bold tracking-tight text-neutral-900">
+            <h1 className="break-words text-3xl font-bold leading-tight tracking-tight text-neutral-900 sm:text-4xl">
               {project.project_name}
             </h1>
             <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600">
@@ -206,7 +206,7 @@ export function ReportView({
           {photos.length > 0 && (
             <section data-pdf-section className="lux-card">
               <SectionHeading icon={ImageIcon}>Event Photos</SectionHeading>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="report-photos-grid grid grid-cols-2 gap-4">
                 {photos.map((photo) => (
                   <figure key={photo.id} className="overflow-hidden rounded-2xl border border-slate-200/70">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -226,7 +226,7 @@ export function ReportView({
             </section>
           )}
 
-          <div data-pdf-section className="grid grid-cols-3 gap-4">
+          <div data-pdf-section className="report-metrics-grid grid grid-cols-1 gap-4 sm:grid-cols-3">
             <MetricsCard
               label="Volunteer Hours"
               value={report.metrics.volunteer_hours}
@@ -250,7 +250,7 @@ export function ReportView({
           {REPORT_SECTIONS.map(({ title, icon: Icon, key, italic }) => (
             <div key={key} data-pdf-section className="lux-card">
               <SectionHeading icon={Icon}>{title}</SectionHeading>
-              <p className={`text-sm leading-relaxed text-slate-600 ${italic ? "italic" : ""}`}>
+              <p className={`break-words text-sm leading-relaxed text-slate-600 ${italic ? "italic" : ""}`}>
                 {report[key]}
               </p>
             </div>
@@ -265,7 +265,7 @@ export function ReportView({
 
       <section
         id="report-socials"
-        className={`mx-auto max-w-5xl space-y-6 p-8 ${focusSocials ? "" : "border-t border-slate-200/80"}`}
+        className={`mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:p-8 ${focusSocials ? "" : "border-t border-slate-200/80"}`}
       >
         <div>
           <SectionHeading icon={Share2}>Social Media Kit</SectionHeading>
