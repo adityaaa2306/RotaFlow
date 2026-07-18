@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowRight, ClipboardList, Loader2, Sparkles } from "lucide-react";
+import {
+  AiModeGuideModal,
+  shouldShowAiGuide,
+} from "@/components/AiModeGuideModal";
 import { ConversationalInput } from "@/components/ConversationalInput";
 import { MissingFieldsPanel } from "@/components/MissingFieldsPanel";
 import { SubmitForm } from "@/components/SubmitForm";
@@ -101,13 +105,20 @@ function isFormValid(data: ProjectFormData): boolean {
 
 export default function SubmitPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"manual" | "ai">("manual");
+  const [activeTab, setActiveTab] = useState<"manual" | "ai">("ai");
+  const [showAiGuide, setShowAiGuide] = useState(false);
   const [formData, setFormData] = useState<ProjectFormData>(EMPTY_FORM_DATA);
   const [extractedResult, setExtractedResult] = useState<ExtractedProject | null>(null);
   const [photos, setPhotos] = useState<File[]>([]);
   const [formTouched, setFormTouched] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeTab === "ai" && shouldShowAiGuide()) {
+      setShowAiGuide(true);
+    }
+  }, [activeTab]);
 
   function handleFormChange(updates: Partial<ProjectFormData>) {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -201,81 +212,88 @@ export default function SubmitPage() {
     formTouched,
   };
 
-  return (
-    <form
-      noValidate
-      className="mx-auto max-w-5xl p-8"
-      onSubmit={(event) => {
-        event.preventDefault();
-        void handleSubmit();
-      }}
-    >
-      <header className={lux.pageHeader}>
-        <h1 className={lux.pageTitle}>Submit Project</h1>
-        <p className={lux.pageSubtitle}>Document your club&apos;s impact in seconds.</p>
-      </header>
+return (
+    <>
+      <AiModeGuideModal open={showAiGuide} onClose={() => setShowAiGuide(false)} />
 
-      <Tabs
-        value={activeTab}
-        onValueChange={(value) => setActiveTab(value as "manual" | "ai")}
+      <form
+        noValidate
+        className="mx-auto max-w-5xl p-8"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit();
+        }}
       >
-        <TabsList>
-          <TabsTrigger value="manual">
-            <ClipboardList className="h-4 w-4" />
-            Manual Entry
-          </TabsTrigger>
-          <TabsTrigger value="ai">
-            <Sparkles className="h-4 w-4" />
-            AI Mode ✨
-          </TabsTrigger>
-        </TabsList>
+        <header className={lux.pageHeader}>
+          <h1 className={lux.pageTitle}>Submit Project</h1>
+          <p className={lux.pageSubtitle}>
+            Document your club&apos;s impact in seconds — AI Mode fills the form from
+            your story.
+          </p>
+        </header>
 
-        <TabsContent value="manual">
-          <SubmitForm {...submitFormProps} />
-        </TabsContent>
-
-        <TabsContent value="ai">
-          <div className="flex flex-col gap-6">
-            <ConversationalInput onExtracted={handleExtracted} />
-
-            {extractedResult && (
-              <MissingFieldsPanel
-                confidence={extractedResult.confidence}
-                values={formData}
-              />
-            )}
-
-            {extractedResult && (
-              <div className="flex items-center gap-4">
-                <div className={lux.divider} />
-                <span className={lux.mutedText}>Review and complete the form below</span>
-                <div className={lux.divider} />
-              </div>
-            )}
-
-            <SubmitForm {...submitFormProps} />
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      <div className="mt-8">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`${lux.btnPrimary} disabled:cursor-not-allowed disabled:opacity-50`}
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as "manual" | "ai")}
         >
-          {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isSubmitting && photos.length > 0 ? "Uploading photos..." : "Generate Report →"}
-          {!isSubmitting && <ArrowRight className="h-4 w-4" />}
-        </button>
+          <TabsList>
+            <TabsTrigger value="ai">
+              <Sparkles className="h-4 w-4" />
+              AI Mode ✨
+            </TabsTrigger>
+            <TabsTrigger value="manual">
+              <ClipboardList className="h-4 w-4" />
+              Manual Entry
+            </TabsTrigger>
+          </TabsList>
 
-        {submitError && (
-          <div className={`mt-4 flex gap-3 ${lux.bannerError}`}>
-            <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
-            <p className="text-sm text-red-700">{submitError}</p>
-          </div>
-        )}
-      </div>
-    </form>
+          <TabsContent value="ai">
+            <div className="flex flex-col gap-6">
+              <ConversationalInput onExtracted={handleExtracted} />
+
+              {extractedResult && (
+                <MissingFieldsPanel
+                  confidence={extractedResult.confidence}
+                  values={formData}
+                />
+              )}
+
+              {extractedResult && (
+                <div className="flex items-center gap-4">
+                  <div className={lux.divider} />
+                  <span className={lux.mutedText}>Review and complete the form below</span>
+                  <div className={lux.divider} />
+                </div>
+              )}
+
+              <SubmitForm {...submitFormProps} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="manual">
+            <SubmitForm {...submitFormProps} />
+          </TabsContent>
+        </Tabs>
+
+        <div className="mt-8">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`${lux.btnPrimary} disabled:cursor-not-allowed disabled:opacity-50`}
+          >
+            {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+            {isSubmitting && photos.length > 0 ? "Uploading photos..." : "Generate Report →"}
+            {!isSubmitting && <ArrowRight className="h-4 w-4" />}
+          </button>
+
+          {submitError && (
+            <div className={`mt-4 flex gap-3 ${lux.bannerError}`}>
+              <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
+              <p className="text-sm text-red-700">{submitError}</p>
+            </div>
+          )}
+        </div>
+      </form>
+    </>
   );
 }
